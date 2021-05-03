@@ -1,0 +1,223 @@
+{% extends "index.html" %}
+{% block content %}
+<div>
+<div id="product-history-container">
+    <div class="center-line width-100">
+        <nav id="product-breadcrumbs" class="brown lighten-1">
+            <!-- <a href="#!" class="breadcrumb">First</a>
+            <a href="#!" class="breadcrumb">Second</a>
+            <a href="#!" class="breadcrumb">Third</a> -->
+        </nav>
+    </div>
+    <div id="product-name-container" class="center-line width-100">
+        <label id="product-name" class="">
+            <div class="card blue-grey darken-1">
+                <div class="card-content white-text">
+                  <span id="current-product-name" class="card-title"></span>
+                  <br>
+                  <div>
+                    <span class="product-clips" id="product_id-clip"></span>
+                    <span class="product-clips" id="manufacturer-clip">Manufacturer: ABC</span>
+                    <span class="product-clips" id="location-clip">Location: BLR</span>
+                    
+                </div>
+                </div>
+                <div class="card-action" >
+                  <span class="card-links"><a>VIEW TXN</a></span>
+                  <span class="card-links"><a>VIEW PURCHASE</a></span>
+                </div>
+              </div>
+        </label>
+    </div>
+    <div id="product-details" class="center-line width-100">
+        <div id="sub-products-container" class="center-line width-80">
+            <div id="sub-products" class="row" style="background-color: rgba(62, 117, 143, 0.3);">
+                
+            </div>
+        </div>
+        <div id="purchases-container" class="center-line" style="margin-left: 2%; width: 18%; background-color: rgba(62, 117, 143, 0.3);" >
+            <div id="lifecycle-container" class="center-line width-100">
+                <h5>Lifecycle:</h5>
+                <ul id="lifecycle" class="collection">
+                </ul>
+                          
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- 
+<div>
+    <span>PRODUCTS: </span>
+    <div id="current_product"></div>
+</div>
+<br>
+<div id="sub_products"></div>
+<br>
+<div id="lifecycle"></div>
+
+</div> -->
+
+
+<script>
+
+    var dict = {{ data|tojson }};
+    var id = {{ id|tojson }};
+
+
+
+
+    function countCertificates(productID){
+        if(dict[productID].count != undefined) return dict[productID].count
+        if (dict[productID].certification != undefined){
+            dict[productID].count = [1,1]
+            return [1,1]
+        }
+
+        let total = 0
+        if(dict[productID].sub_products.length == 0) total = 1
+        let c = 0
+        for(let subp of dict[productID].sub_products){
+            res = countCertificates(subp[0])
+            c += res[0]
+            total += res[1]
+        }
+        dict[productID].count = [c,total]
+        return [c,total]
+    }
+    for(let i of Object.keys(dict))
+        countCertificates(i);
+
+
+    const BASE = id;
+
+    var index = 0;
+    var product_path = [String(BASE)]
+
+    var DOMs = {}
+    
+
+
+    console.log(id,dict)
+
+    var CUR_PRODUCT = id;
+
+    var subDOM = document.getElementById('sub-products')
+    var curDOM = document.getElementById('current-product-name')
+    var curPathDOM = document.getElementById('product-breadcrumbs')
+    var lifeDOM = document.getElementById('lifecycle')
+
+    function curDOMClick(domID){
+        index = parseInt(domID.slice(6)); 
+        CUR_PRODUCT = product_path[index]; 
+        createSubproducts()
+    }
+
+    function getCertificateSymbols(i) {
+        let c = dict[i].count[0]
+        let t = dict[i].count[1]
+        let num_g = parseInt(c*5/t)
+        let res = ''
+        for(let i=0;i<num_g;i++){
+            res += '<img src="/static/leaf_green.png" width="20px">'
+        }
+        for(let i=num_g;i<5;i++){
+            res += '<img src="/static/leaf_red.png" width="20px">'
+        }
+        res += '<br><span>(Certificates: '+String(c) + '/' + String(t) + ')</span>'
+
+        return res
+    }
+
+    function createSubProductCard(i) {
+        let dom = `<div class="col s12 m6 l3">
+                  <div class="card brown lighten-1">
+                    <div class="card-content white-text">
+                      <span class="card-title">`+dict[i].product_name+`</span><hr style="width:95%">`
+                        + '<p>Quantity: '+'10%'+'</p><br>'
+                        + '<p>Product ID: '+i+'</p><br>'
+                        + '<p>Manufacturer: '+'XYZ'+'</p><br>'
+                      + getCertificateSymbols(i) +
+                    `</div>
+                    <div class="card-action" style="margin-left: 5%;">
+                        <a href="#" onclick="index += 1; CUR_PRODUCT = `+i+`; createSubproducts()">EXPLORE</a>
+                        <a href="#">TXN</a>
+                    </div>
+                  </div>
+                </div>`
+        return dom
+    }
+
+    for(let id of Object.keys(dict)){
+        DOMs[id] = createSubProductCard(id)
+    }
+
+    function createSubproducts(calledby=null){
+        if (index == product_path.length){
+            product_path.push(CUR_PRODUCT)
+        }
+        else if (product_path[index] != CUR_PRODUCT){
+            // new branch
+            product_path = product_path.slice(0,index)
+            product_path.push(CUR_PRODUCT)
+        }
+        
+
+        let subprods = dict[CUR_PRODUCT].sub_products;
+        subDOM.innerHTML = ''
+        for(let subp of subprods){
+            subDOM.innerHTML += DOMs[subp[0]]
+        }
+        if(subprods.length == 0){
+            let cert = dict[CUR_PRODUCT].certification
+            if(cert==undefined) cert = 'None'
+            subDOM.innerHTML = `
+            <div class="card blue-grey darken-3">
+                <div class="card-content white-text">
+                  <span class="card-title">Farmer's Organic Certificate</span>
+                  <br>
+                  <div>
+                    <span>Farmer Name: PQR</span><br>
+                    <span>Accreditation Number: `+cert+`</span>
+                    
+                </div>
+                </div>
+                <div class="card-action" >
+                  <span class="card-links"><a>VIEW TXN</a></span>
+                </div>
+              </div>
+            `
+        }
+
+        curDOM.innerHTML = dict[CUR_PRODUCT].product_name
+        document.getElementById('product_id-clip').innerHTML = 'Product ID: ' + CUR_PRODUCT;
+        // document.getElementById('manufacturer-clip').innerHTML = 'Manufacturer: ' + dict[CUR_PRODUCT].metadata.manufacturer;
+
+        curPathDOM.innerHTML = ''
+        // console.log(product_path)
+        // console.log('starting:',CUR_PRODUCT)
+        for(let i=0;i<product_path.length;i++){
+            // if(i==index) curDOM.innerHTML += "<button class='waves-light btn-large' id='index_"+i+"' onclick='curDOMClick(this.id)'><b>" + dict[product_path[i]].product_name + "</b></button>"
+            // else curDOM.innerHTML += "<button class='waves-light btn-large' id='index_"+i+"' onclick='curDOMClick(this.id)'>" + dict[product_path[i]].product_name + "</button>"
+            curPathDOM.innerHTML += '<a id="index_'+i+'" onclick="curDOMClick(this.id)" href="#!" class="breadcrumb" style="color:'+(i==index ? 'white' : 'rgb(230,230,230)')+';">'+dict[product_path[i]].product_name+'</a>'
+        }
+        // console.log('ending:',CUR_PRODUCT)
+
+        let life = dict[CUR_PRODUCT].lifecycle.map(x=>x)
+        // life.reverse()
+        lifeDOM.innerHTML = ''
+        for(let l of life) {
+            lifeDOM.innerHTML += '<li class="collection-item" style="background-color: rgba(62, 117, 143, 0.6)">'+l+'</li>'
+        }
+
+    }
+    createSubproducts(0)
+
+</script>
+
+
+{% endblock %}
+
+
+
