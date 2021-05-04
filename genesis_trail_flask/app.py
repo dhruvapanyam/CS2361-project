@@ -26,13 +26,43 @@ def home():
     # print(out)
     return render_template('home.html', pending=out, customer=customer)
 
-@app.route('/login', methods=["POST"])
+# @app.route('/login', methods=["POST"])
+# def login():
+#     global USERNAME
+#     if len(request.form['username']):
+#         USERNAME = request.form['username']
+#         print('username is now:',USERNAME)
+#     return redirect(url_for('home'))
+
+@app.route('/login', methods=["POST","GET"])
 def login():
     global USERNAME
-    if len(request.form['username']):
-        USERNAME = request.form['username']
-        print('username is now:',USERNAME)
-    return redirect(url_for('home'))
+    if request.method == "GET":
+        return render_template('login.html', alerts=[])
+    else:
+        out = None
+        usr = request.form['username']
+        pwd = request.form['password']
+        try:
+            out = subprocess.check_output([
+                'node','/home/dhruva/fabric-samples/fabchat/javascript/query.js',usr,pwd,'login'
+            ]).decode().split('OUTPUT:')[1]
+            out = json.loads(out)
+
+        except:
+            pass
+    
+        print('output from login:',out)
+
+        if out is None or out != "PERMISSION GRANTED!":
+            return render_template('login.html', alerts=["Login failed!"])
+        else:
+            USERNAME = usr
+            return redirect(url_for('home'))
+
+@app.route('/register')
+def register():
+    return render_template('register.html')
 
 @app.route('/explore/<id>')
 def explore(id):

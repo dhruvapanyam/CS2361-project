@@ -307,9 +307,9 @@ class FabChat extends Contract {
 
         
 
-        if(manuf.type != 'user'){
-            throw 'Invalid user entry found!'
-        }
+        // if(manuf.type != 'user'){
+        //     throw 'Invalid user entry found!'
+        // }
 
     
         let data = {

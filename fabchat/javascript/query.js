@@ -15,7 +15,7 @@ choice = "certificates" or "history"
 
 'use strict';
 
-const {FileSystemWallet, Gateway} = require('fabric-network');
+const {FileSystemWallet, Gateway, BaseCheckpointer} = require('fabric-network');
 const fs = require('fs');
 const path = require('path');
 
@@ -25,13 +25,21 @@ const ccp = JSON.parse(ccpJSON);
 let productID;
 let user;
 let choice;
+let pwd;
 
 process.argv.forEach(function (val, index, array) {
     // console.log(index + ': ' + val);
     productID = array[3];
     user = array[2];
     choice = array[4];
+    if(choice == 'login')
+        pwd = productID;
 });
+
+function printOutput(out){
+    console.log('OUTPUT:')
+    console.log(JSON.stringify(out));
+}
 
 async function main() {
     try {
@@ -62,53 +70,50 @@ async function main() {
         const contract = network.getContract('fabchat');
 
         // Evaluate the specified transaction.
-        // queryMsg transaction - requires 1 argument, ex: ('queryMsg', 'MSG0')
-        // queryAllMsgs transaction - requires no arguments, ex: ('queryAllMsgs')
-        if (choice === "certificates") {
+        console.log('CHOICE:',choice)
+        if(choice == 'certificates'){
             const result = await contract.evaluateTransaction('getCertificates',productID);
-            let temp_result = JSON.parse(result)
-            console.log('OUTPUT:')
-            console.log(JSON.stringify(temp_result))
-            // for (let res of temp_result)
-            //     console.log(res)
-            // console.log(`TransactionTypeAll has been evaluated, result is: ${result.toString()}`);
-        } else if (choice === "pending") {
-            const result = await contract.evaluateTransaction('getPendingValidations',user);
-            let temp_result = JSON.parse(result)
-            console.log('OUTPUT:')
-            console.log(JSON.stringify(temp_result))
-            // console.log('received',temp_result.length,'txns')
-            // for (let res of temp_result)
-            //     console.log(res)
-            // console.log(`TransactionTypeAll has been evaluated, result is: ${result.toString()}`);
-        } else if (choice === "getAll") {
-            const result = await contract.evaluateTransaction('getCompleteChainstate',user);
-            let temp_result = JSON.parse(result)
-            console.log('OUTPUT:')
-            console.log(JSON.stringify(temp_result))
-            // console.log('received',temp_result.length,'txns')
-            // for (let res of temp_result)
-            //     console.log(res)
-            // console.log(`TransactionTypeAll has been evaluated, result is: ${result.toString()}`);
-        } else if (choice === "viewUser") {
-            const result = await contract.evaluateTransaction('viewUser',productID);
-            let temp_result = JSON.parse(result)
-            console.log('OUTPUT:')
-            console.log(JSON.stringify(temp_result))
-            // console.log('received',temp_result.length,'txns')
-            // for (let res of temp_result)
-            //     console.log(res)
-            // console.log(`TransactionTypeAll has been evaluated, result is: ${result.toString()}`);
-        } else {
-            const result = await contract.evaluateTransaction('queryMaster', productID);
-            console.log()
-            let temp_result = JSON.parse(result)
-            console.log('OUTPUT:')
-            console.log(JSON.stringify(temp_result))
-            // for (let res in temp_result)
-            //     console.log(res, temp_result[res])
-            // console.log(`TransactionTypeID has been evaluated, result is: ${result.toString()}`);
+            printOutput(result)
         }
+        else if(choice == 'pending'){
+            const result = await contract.evaluateTransaction('getPendingValidations',user);
+            printOutput(result)
+        }
+        else if(choice == 'getAll'){
+            const result = await contract.evaluateTransaction('getCompleteChainstate',user);
+            printOutput(result)
+        }
+        else if(choice == 'viewUser'){
+            const result = await contract.evaluateTransaction('viewUser',productID);
+            printOutput(result)
+        }
+        else if(choice == 'history'){
+            const result = await contract.evaluateTransaction('queryMaster', productID);
+            printOutput(result)
+        }
+        else if(choice == 'login'){
+            await gateway.connect(ccp, {wallet, identity: 'admin', discovery: {enabled: false}});
+            const ca = gateway.getClient().getCertificateAuthority();
+            const adminIdentity = gateway.getCurrentIdentity();
+
+            const identityService = ca.newIdentityService();
+            console.log('reached here')
+            const retrieveIdentity = await identityService.getOne(user,adminIdentity)
+            for(let attr of retrieveIdentity.result.attrs){
+                if(attr.name != 'password') continue
+                if(attr.value == pwd){
+                    printOutput('PERMISSION GRANTED!')
+                }
+                else{
+                    printOutput('PERMISSION DENIED!')
+                }
+            }
+        }        
+        else{
+            throw 'Invalid choice!'
+        }
+
+        
 
     } catch (error) {
         console.error(`Failed to evaluate transaction: ${error}`);

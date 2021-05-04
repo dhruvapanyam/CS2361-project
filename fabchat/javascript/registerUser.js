@@ -8,13 +8,13 @@ CUSTOMER CLIENT:
     node registerUser.js <username> customer
 
 FARMER:
-    node registerUser.js <username> farmer <full name> <location> <organic certificate number>
+    node registerUser.js <username> farmer <full name> <location> <organic certificate number> <pwd>
 
 VENDOR:
-    node registerUser.js <username> vendor <full name>
+    node registerUser.js <username> vendor <full name> <location> <pwd>
 
 MANFUFACTURER:
-    node registerUser.js <username> manufacturer <full name>
+    node registerUser.js <username> manufacturer <full name> <location> <pwd>
 
 
  */
@@ -28,32 +28,46 @@ const path = require('path');
 const ccpPath = path.resolve(__dirname, '..', '..', 'basic-network', 'connection.json');
 const ccpJSON = fs.readFileSync(ccpPath, 'utf8');
 const ccp = JSON.parse(ccpJSON);
-let user, uName, uRole, fCert, fLoc;
+let user, uName, uRole, fCert, uLoc, pwd;
 
 process.argv.forEach(function (val, index, array) {
     user = array[2];
     uRole = array[3];
-    if (uRole == undefined)
-        throw 'No user role entered!'
-    if (uRole != 'customer'){
-        uName = array[4];
-        if (uName == undefined)
-            throw 'No name entered!'
-        if (uRole == 'farmer'){
-            fLoc = array[5]
-            fCert = array[6]
-            // if (fCert == undefined) fCert = 'undefined'
-            if (fLoc == undefined)
-                throw 'No location entered!'
-        }
+    
+    switch(uRole){
+        case 'customer':
+            break
+
+        case 'farmer':
+            uName = array[4];
+            uLoc = array[5];
+            fCert = array[6];
+            pwd = array[7];
+            break
+
+        case 'vendor':
+            uName = array[4];
+            uLoc = array[5]
+            pwd = array[6];
+            break;
+
+        case 'manufacturer':
+            uName = array[4];
+            uLoc = array[5]
+            pwd = array[6];
+            break;
+
+        default:
+            throw 'Invalid user type! Typo detected.'
     }
+
 });
 
 async function createUserEntry(data) {
     try {
 
         // Create a new file system based wallet for managing identities.
-        const walletPath = path.join(process.cwd(), 'wallet');
+        const walletPath = path.join(path.resolve(__dirname), 'wallet');
         const wallet = new FileSystemWallet(walletPath);
         console.log(`Wallet path: ${walletPath}`);
 
@@ -90,7 +104,7 @@ async function createUserEntry(data) {
 async function main() {
     try {
         // Create a new file system based wallet for managing identities.
-        const walletPath = path.join(process.cwd(), 'wallet');
+        const walletPath = path.join(path.resolve(__dirname), 'wallet');
         const wallet = new FileSystemWallet(walletPath);
         console.log(`Wallet path: ${walletPath}`);
 
@@ -130,13 +144,17 @@ async function main() {
         if (uRole != 'customer'){
             attrs.push({ name: 'full_name', value: uName, ecert: true})
             attr_reqs.push({name: "full_name", optional: false})
+
+            attrs.push({ name: 'location', value: uLoc, ecert: true})
+            attr_reqs.push({name: "location", optional: false})
+
+            attrs.push({ name: 'password', value: pwd, ecert: true})
+            attr_reqs.push({name: "password", optional: false})
         }
 
         if (uRole == 'farmer'){
             attrs.push({ name: 'organic_certificate', value: fCert, ecert: true})
-            attrs.push({ name: 'location', value: fLoc, ecert: true})
             attr_reqs.push({name: "organic_certificate", optional: false})
-            attr_reqs.push({name: "location", optional: false})
         }
 
         if(uRole != 'customer'){
@@ -144,6 +162,7 @@ async function main() {
                 // username: user,
                 user_type: uRole,
                 full_name: uName,
+                location: uLoc,
                 certification: fCert
             })
 
@@ -168,6 +187,10 @@ async function main() {
         const userIdentity = X509WalletMixin.createIdentity('Org1MSP', enrollment.certificate, enrollment.key.toBytes());
         wallet.import(user, userIdentity);
         console.log(`Successfully registered and enrolled admin user ${user} and imported it into the wallet`);
+
+
+        
+
         return;
 
     } catch (error) {

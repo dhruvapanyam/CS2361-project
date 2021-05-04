@@ -73,4 +73,4 @@ node invoke.js createPurchase tea_maker 7 20 null
 node invoke.js createProduction tea_maker "Fresh Milk Tea" "12 23" "20 24"
 
 
-node invoke.js createPurchase tea_stall 9 25 null
+node invoke.js createPurchase tea_stall 8 25 null
