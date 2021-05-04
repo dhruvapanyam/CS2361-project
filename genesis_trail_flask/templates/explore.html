@@ -26,7 +26,7 @@
                   <span class="card-links"><a>VIEW TXN</a></span>
                   <span class="card-links"><a>VIEW PURCHASE</a></span>
                 </div>
-              </div>
+            </div>
         </label>
     </div>
     <div id="product-details" class="center-line width-100">
@@ -203,12 +203,12 @@
             curPathDOM.innerHTML += '<a id="index_'+i+'" onclick="curDOMClick(this.id)" href="#!" class="breadcrumb" style="color:'+(i==index ? 'white' : 'rgb(230,230,230)')+';">'+dict[product_path[i]].product_name+'</a>'
         }
         // console.log('ending:',CUR_PRODUCT)
-
+        console.log('CUR:',CUR_PRODUCT)
         let life = dict[CUR_PRODUCT].lifecycle.map(x=>x)
         // life.reverse()
         lifeDOM.innerHTML = ''
         for(let l of life) {
-            lifeDOM.innerHTML += '<li class="collection-item" style="background-color: rgba(62, 117, 143, 0.6)">'+l+'</li>'
+            lifeDOM.innerHTML += '<li class="collection-item" style="background-color: rgba(62, 117, 143, 0.6)">'+JSON.stringify(l)+'</li>'
         }
 
     }

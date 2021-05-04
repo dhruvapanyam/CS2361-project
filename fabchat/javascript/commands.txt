@@ -1,59 +1,76 @@
 node enrollAdmin.js
 
-
-node registerUser.js user
-
+node registerUser.js dhruva customer
 
 
-node invoke.js createRaw user "swamy gudalur banana" A18273981 farmer
+node registerUser.js tea_farmer farmer "Mohan Prakash" Ooty A7481982
 
+node registerUser.js dairy_farmer farmer "Chirag Kariappa" Bangalore
 
-node invoke.js createRaw user "babu ooty watermelon" BJK1239 farmer
+node registerUser.js pepper_farmer farmer "Lakshmi Murthy" Coorg A941119
 
+node registerUser.js tea_coffee_vendor vendor "Shakti Tea Vendors"
 
-node invoke.js createRaw user "kariappa chikmaglur pepper" X1 farmer
+node registerUser.js milk_vendor vendor "Nandi Milk Vendors"
 
+node registerUser.js spice_vendor vendor "Om Spices Vendors"
 
-node invoke.js createRaw user "swamy gudalur potato" A18273981 farmer
+node registerUser.js tea_stall vendor "Veena Stores"
 
+node registerUser.js tea_processor manufacturer "Tea Leaf Processing Factory"
 
-
-
-node invoke.js createPurchase user "rathi swamy" 3 null vendor
-
-
-node invoke.js createPurchase user "mangesh babu" 1 null vendor
-
-
-node invoke.js createPurchase user "mangesh swamy" 0 null vendor
-
-
-node invoke.js createPurchase user "girija kariappa" 2 null vendor
-
-
-node invoke.js createPurchase user "Om_Juice_Center mangesh" 0 6 vendor
-
-
-node invoke.js createPurchase user "Om_Juice_Center mangesh" 1 5 vendor
+node registerUser.js tea_maker manufacturer "Hot & Fresh Milk Tea"
 
 
 
 
-node invoke.js createProduction user "Mix_Fruit_Juice Om_Juice_Center" "0 8" "1 9"
+node invoke.js createRaw tea_farmer "Tea Leaves"
 
+node invoke.js createRaw tea_farmer "Tea Leaves"
 
-node invoke.js createPurchase user "Cake_Joint Om_Juice_Center" 10 null vendor
-
-
-node invoke.js createPurchase user "Cake_Joint rathi" 3 4 vendor
-
-
-node invoke.js createProduction user "Mix_Fruit_Cake Cake_Joint" "10 11" "3 12"
+node invoke.js createRaw tea_farmer "Tea Leaves"
 
 
 
+node invoke.js createRaw dairy_farmer "Cow's Milk"
+
+node invoke.js createRaw dairy_farmer "Cow's Milk"
+
+
+
+node invoke.js createRaw pepper_farmer "Pepper Seeds"
 
 
 
 
+node invoke.js createPurchase tea_coffee_vendor 0 9 null
 
+node invoke.js createPurchase tea_coffee_vendor 0 10 null
+
+
+node invoke.js createPurchase spice_vendor 2 14 null
+
+
+node invoke.js createPurchase tea_processor 3 10 16
+
+node invoke.js createPurchase tea_processor 5 14 18
+
+
+node invoke.js createProduction tea_processor "Processed Tea Leaves" "10 18" "14 19"
+
+
+
+node invoke.js createPurchase milk_vendor 1 12 null
+
+node invoke.js createPurchase milk_vendor 1 13 null
+
+
+node invoke.js createPurchase tea_maker 4 12 21
+
+node invoke.js createPurchase tea_maker 7 20 null
+
+
+node invoke.js createProduction tea_maker "Fresh Milk Tea" "12 23" "20 24"
+
+
+node invoke.js createPurchase tea_stall 9 25 null

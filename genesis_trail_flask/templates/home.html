@@ -1,9 +1,20 @@
 {% extends 'index.html' %}
 {% block content %}
-
+<div class="row">
+  <!-- <div class="col s12"> -->
+    <form action="/login" method="post">
+      <input placeholder="Login" style="width:10%" name="username" id="username">
+      <button class="waves-light btn" type="submit"><i class="material-icons">login</i></button>
+  </form>
+  <!-- </div> -->
+</div>
 <div class="width-80" style="margin-left: 10%;">
     <div class="row">
-        <div class="col s8">
+        {% if customer == true %}
+          <div class="col s12">
+        {% else %}
+          <div class="col s8">
+        {% endif %}
             <div class="row">
                 <div class="col s12">
                   <div class="card blue-grey darken-1">
@@ -54,33 +65,66 @@
                 </div>
             </div>
         </div>
+
+        {% if customer == false %}
         <div class="col s4">
             <div class="row">
-                <div class="col s12">
+                <div id="pending-validations-container" class="col s12">
                   <div class="card brown lighten-1">
                     <div class="card-content white-text">
-                      <span class="card-title"  style="text-align: center;">Notifications</span>
+                      <span class="card-title"  style="text-align: center;">
+                        Pending Validations
+                      </span>
                       <hr>
-                        <p>
-                            Blah<br>
-                            Blah<br>
-                            Blah<br>
-                            Blah<br>
-                            Blah<br>
-                            Blah<br>
-                            Blah<br>
-                            Blah<br>
-                        </p>
+                        <div id="pending-validations">
+
+                        </div>
                     </div>
-                    <div class="card-action"  style="text-align: center;">
-                      <a href="#">This is a link</a>
-                      <a href="#">This is a link</a>
-                    </div>
+                    <div class="card-action"></div>
+                    
                   </div>
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
+
+
+<script>
+
+  var pending = {{ pending|tojson }};
+  var customer = {{ customer|tojson }};
+
+  console.log(pending)
+  console.log('Pending:',pending)
+  if(customer == false){
+    var pendingDOM = document.getElementById('pending-validations')
+    pendingDOM.innerHTML = ''
+    for(let txn of pending){
+      pendingDOM.innerHTML += `
+        <div class="card teal lighten-1" style="cursor: pointer;"">
+          <div class="card-content white-text">
+            <span class="card-title">`+ txn.product_name +`</span>
+            <p>`
+              +'Buyer: '+txn.buyer.data.full_name + '<br>'
+              +'Purchase ID: '+txn.txnID + '<br>'
+              +'Product ID: '+txn.productID + '<br>'
+              
+              +`</p>
+          </div>
+          <div class="card-action">
+            <a href="/explore/`+txn.productID+`">Explore Product</a>
+            <form action="/validate/`+txn.txnID+`" method="post">
+              <input type="submit" value="Validate" />
+            </form>
+          </div>
+        </div>
+        `
+    }
+  }
+
+</script>
+
 
 {% endblock %}

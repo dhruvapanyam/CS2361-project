@@ -37,7 +37,9 @@ async function main() {
     try {
 
         // Create a new file system based wallet for managing identities.
-        const walletPath = path.join(process.cwd(), 'wallet');
+        console.log(__dirname)
+        console.log('path:',path.resolve(__dirname))
+        const walletPath = path.join(path.resolve(__dirname), 'wallet');
         const wallet = new FileSystemWallet(walletPath);
         console.log(`Wallet path: ${walletPath}`);
 
@@ -64,13 +66,47 @@ async function main() {
         // queryAllMsgs transaction - requires no arguments, ex: ('queryAllMsgs')
         if (choice === "certificates") {
             const result = await contract.evaluateTransaction('getCertificates',productID);
-            console.log()
-            console.log(JSON.stringify(JSON.parse(result, null, 2)))
+            let temp_result = JSON.parse(result)
+            console.log('OUTPUT:')
+            console.log(JSON.stringify(temp_result))
+            // for (let res of temp_result)
+            //     console.log(res)
+            // console.log(`TransactionTypeAll has been evaluated, result is: ${result.toString()}`);
+        } else if (choice === "pending") {
+            const result = await contract.evaluateTransaction('getPendingValidations',user);
+            let temp_result = JSON.parse(result)
+            console.log('OUTPUT:')
+            console.log(JSON.stringify(temp_result))
+            // console.log('received',temp_result.length,'txns')
+            // for (let res of temp_result)
+            //     console.log(res)
+            // console.log(`TransactionTypeAll has been evaluated, result is: ${result.toString()}`);
+        } else if (choice === "getAll") {
+            const result = await contract.evaluateTransaction('getCompleteChainstate',user);
+            let temp_result = JSON.parse(result)
+            console.log('OUTPUT:')
+            console.log(JSON.stringify(temp_result))
+            // console.log('received',temp_result.length,'txns')
+            // for (let res of temp_result)
+            //     console.log(res)
+            // console.log(`TransactionTypeAll has been evaluated, result is: ${result.toString()}`);
+        } else if (choice === "viewUser") {
+            const result = await contract.evaluateTransaction('viewUser',productID);
+            let temp_result = JSON.parse(result)
+            console.log('OUTPUT:')
+            console.log(JSON.stringify(temp_result))
+            // console.log('received',temp_result.length,'txns')
+            // for (let res of temp_result)
+            //     console.log(res)
             // console.log(`TransactionTypeAll has been evaluated, result is: ${result.toString()}`);
         } else {
             const result = await contract.evaluateTransaction('queryMaster', productID);
             console.log()
-            console.log(JSON.stringify(JSON.parse(result, null, 2)))
+            let temp_result = JSON.parse(result)
+            console.log('OUTPUT:')
+            console.log(JSON.stringify(temp_result))
+            // for (let res in temp_result)
+            //     console.log(res, temp_result[res])
             // console.log(`TransactionTypeID has been evaluated, result is: ${result.toString()}`);
         }
 

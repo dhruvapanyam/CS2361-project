@@ -16,17 +16,17 @@ const ccp = JSON.parse(ccpJSON);
 
 Raw TXN:
 
-node invoke.js createRaw <username> "<farmer_name> <location> <product_name>" <certification> farmer
+node invoke.js createRaw <username> <prouct_name>
 
 
 Purchase TXN:
 
-node invoke.js createPurchase <username> "<buyer> <seller>" <rawID> <prev_purchase> vendor
+node invoke.js createPurchase <username> <seller> <productID> <purchaseID>
 
 
 Production TXN:
 
-node invoke.js createProduction <username> "<product_name> <manufacturer>" "<rawID> <purID>" "..." "..."
+node invoke.js createProduction <username> <product_name> "<rawID> <purID>" " ... " " ... " ...
 
 */
 
@@ -40,60 +40,33 @@ process.argv.forEach(function (val, index, array) {
 
     if (choice == 'createRaw'){
         user = array[3];
-        let meta = array[4].split(' ')
-        farmer_name = meta[0]
-        location = meta[1]
-        product_name = meta[2]
-        certification = array[5]
-        user_type = array[6]
-
-        metadata = {
-            farmer_name,
-            location,
-            product_name
-        }
-
+        product_name = array[4]
     }
 
     else if (choice == 'createPurchase') {
         user = array[3]
-        let meta = array[4].split(' ')
-        buyer = meta[0];
-        seller = meta[1]
+        seller = array[4]
         productID = array[5]
         purchaseID = array[6]
-        // if (purchaseID == 'null') purchaseID = null
-        user_type = array[7]
-
-        metadata = {
-            buyer,
-            seller
-        }
-
     }
 
     else if (choice == 'createProduction') {
         user = array[3]
-        let meta = array[4].split(' ')
-        product_name = meta[0]
-        manufacturer = meta[1];
-        
-        metadata = {
-            product_name,
-            manufacturer
-        }
+        product_name = array[4]
         sub_products = []
         for (let i=5; i < array.length; i++){
             sub_products.push(array[i].split(' '))
         }
-        console.log(sub_products)
+    }
 
-        user_type = 'manufacturer'
+    else if (choice == 'validatePurchase') {
+        user = array[3];
+        purchaseID = array[4];
     }
 
     else {
         console.log('typo')
-        throw 'go die'
+        throw 'ERROR! Something went wrong.'
     }
 
 });
@@ -102,7 +75,7 @@ async function main() {
     try {
 
         // Create a new file system based wallet for managing identities.
-        const walletPath = path.join(process.cwd(), 'wallet');
+        const walletPath = path.join(path.resolve(__dirname), 'wallet');
         const wallet = new FileSystemWallet(walletPath);
         console.log(`Wallet path: ${walletPath}`);
 
@@ -128,21 +101,24 @@ async function main() {
         // createMsg transaction - requires 5 argument, ex: ('createMsg', 'CAR12', 'Honda', 'Accord', 'Black', 'Tom')
         // flagMsg transaction - requires 2 args , ex: ('flagMsg', 'CAR10', 'Dave')
         if (choice === 'createRaw') {
-            console.log('user type:',user_type)
-            await contract.submitTransaction('createRawTransaction', JSON.stringify(metadata), certification, user_type);     // EDIT (pass anonymous flag value to chaincode)
+            // console.log('user type:',user_type)
+            await contract.submitTransaction('createRawTransaction', product_name);
             console.log(`${choice} Transaction has been submitted`);
 
         } 
 
         else if (choice === 'createPurchase') {
-            console.log('user type:',user_type)
-            await contract.submitTransaction('createPurchaseTransaction', JSON.stringify(metadata), productID, purchaseID, user_type);     // EDIT (pass anonymous flag value to chaincode)
+            await contract.submitTransaction('createPurchaseTransaction', seller, productID, purchaseID);     // EDIT (pass anonymous flag value to chaincode)
             console.log(`${choice} Transaction has been submitted`);
         }
 
         else if (choice === 'createProduction') {
-            console.log('user type:',user_type)
-            await contract.submitTransaction('createProductionTransaction', JSON.stringify(metadata), JSON.stringify(sub_products), user_type);     // EDIT (pass anonymous flag value to chaincode)
+            await contract.submitTransaction('createProductionTransaction', product_name, JSON.stringify(sub_products));     // EDIT (pass anonymous flag value to chaincode)
+            console.log(`${choice} Transaction has been submitted`);
+        }
+
+        else if (choice === 'validatePurchase') {
+            await contract.submitTransaction('validatePurchase', purchaseID);     // EDIT (pass anonymous flag value to chaincode)
             console.log(`${choice} Transaction has been submitted`);
         }
 
