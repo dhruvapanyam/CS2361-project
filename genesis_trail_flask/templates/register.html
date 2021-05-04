@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genesis Trail</title>
+
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    
+</head>
+<body >
+    <nav style="margin-bottom: 5%;">
+        <div class="nav-wrapper brown lighten-1" style="padding-left: 1%">
+          <a href="/" class="brand-logo"><i class="material-icons" style="font-size: 30px;">home</i><span class="valign-wrapper" style="font-size: 22px;">GENESIS TRAIL</span></a>
+          <ul class="right hide-on-med-and-down">
+            <li><span>Explore: &nbsp;</span></li>
+            <li><input id="pId"></li>
+            <li><a onclick="let inp = document.getElementById('pId').value; if (inp.length > 0){window.location.href = '/view/'+inp;}"><i class="material-icons">search</i></a></li>
+            <li><a href="badges.html"><i class="material-icons">view_module</i></a></li>
+            <li><a href="collapsible.html"><i class="material-icons">refresh</i></a></li>
+            <li><a href="mobile.html"><i class="material-icons">more_vert</i></a></li>
+          </ul>
+        </div>
+      </nav>
+    
+      <div class="container">
+        <div class="row">
+            <form class="col s12" id="reg-form">
+              <div class="row">
+                <div class="input-field col s6">
+                  <input id="first_name" type="text" class="validate" required>
+                  <label for="first_name">First Name</label>
+                </div>
+                <div class="input-field col s6">
+                  <input id="last_name" type="text" class="validate" required>
+                  <label for="last_name">Last Name</label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s12">
+                  <input id="email" type="email" class="validate" required>
+                  <label for="email">Email</label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s12">
+                  <input id="password" type="password" class="validate" minlength="6" required>
+                  <label for="password">Password</label>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="input-field col s12">
+                  <input id="location" type="text" class="validate" required>
+                  <label for="location">Location</label>
+                </div>
+              </div>
+                
+                 <div class="row">
+                <div class="input-field col s12">
+                  <input id="certificate" type="text" class="validate" required>
+                  <label for="certificate">Organic Certification ID</label>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="input-field col s6">
+                  <div class="radio">
+                    <input name="role" type="radio" id="manufacturer" required />
+                    <label for="manufacturer">Manufacturer</label>
+                  </div>
+                  <div class="role">
+                    <input name="role" type="radio" id="farmer" required />
+                    <label for="farmer">Farmer</label>
+                  </div>
+                <div class="role">
+                    <input  name="role" type="radio" id="vendor" required />
+                    <label for="vendor">Vendor</label>
+                  </div>
+                </div>
+
+                
+           
+        
+                <div class="input-field col s6">
+                  <button class="btn btn-large btn-register waves-effect blue-grey darken-1" type="submit" name="action">Register
+                    <i class="material-icons right">done</i>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+          <a title="Login" class="ngl btn-floating btn-large waves-effect waves-light blue-grey darken-1"><i class="material-icons">input</i></a>
+        </div>
+        
+</body>
+</html>
+
+<script>
+$(document).ready(function() {
+    $('select').material_select();
+  });</script>
+
+<style>
+
+body {
+    background-color: #b5d3d3;
+
+}
+    .subproduct{
+        background-color: aqua;
+    }
+
+
+.center-line {
+    text-align: center;
+    /* display: inline-block; */
+    float: left;
+    /* border: 1px solid; */
+}
+
+.width-10 {
+    width: 10%;
+}
+.width-20 {
+    width: 20%;
+}
+.width-30 {
+    width: 30%;
+}
+.width-40 {
+    width: 40%;
+}
+.width-50 {
+    width: 50%;
+}
+.width-60 {
+    width: 60%;
+}
+.width-70 {
+    width: 70%;
+}
+.width-80 {
+    width: 80%;
+}
+.width-90 {
+    width: 90%;
+}
+.width-100 {
+    width: 100%;
+}
+
+#product-history-container {
+    width: 80%;
+    margin-left: 10%;
+}
+
+.product-clips {
+    padding: 5%;
+}
+
+.card-links {
+    /* width: 80px; */
+    text-align: center;
+    /* border: 1px solid; */
+    cursor: pointer;
+}
+
+/* body {
+  background: #b5d3d3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+} */
+.container {
+  background: white;
+  padding: 20px 25px;
+  border: 5px solid #8d6e63;
+  width: 550px;
+  height: auto;
+  box-sizing: border-box;
+  position: relative;
+}
+.col.s6 > .btn {
+   width: 100%;
+}
+
+radio:required {
+  border-color: red;
+}
+
+input[type="radio"]{
+    -webkit-appearance: radio;
+}
+
+.container {
+  animation: showUp 0.5s cubic-bezier(0.18, 1.3, 1, 1) forwards;
+}
+
+@keyframes showUp {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transoform: scale(1);
+  }
+}
+.row {margin-bottom: 10px;}
+
+.ngl {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+}
+
+
+</style>
