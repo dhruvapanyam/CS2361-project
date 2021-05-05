@@ -41,6 +41,7 @@ def login():
         return render_template('login.html', alerts=[])
     else:
         out = None
+        print(request.form)
         usr = request.form['username']
         pwd = request.form['password']
         try:
@@ -60,9 +61,83 @@ def login():
             USERNAME = usr
             return redirect(url_for('home'))
 
-@app.route('/register')
+@app.route('/register', methods=["POST","GET"])
 def register():
-    return render_template('register.html')
+    if request.method == "GET":
+        return render_template('register.html')
+    else:
+        data = request.form
+        name = data['name']
+        username = data['username']
+        password = date['password']
+        location = data['location']
+        certificate = data['certificate']
+        role = data['role']
+
+        if(role=='farmer'):
+            out = subprocess.check_output([
+            'node','/home/dhruva/fabric-samples/fabchat/javascript/registerUser.js',username,role,name,location,certificate
+            ]).decode().split('OUTPUT:')[1]
+            out = json.loads(out)
+        else:
+            out = subprocess.check_output([
+            'node','/home/dhruva/fabric-samples/fabchat/javascript/registerUser.js',username,role,name
+            ]).decode().split('OUTPUT:')[1]
+            out = json.loads(out)
+
+        return redirect(url_for('login'))
+
+
+@app.route('/addtxn/<username>', methods=["POST","GET"])
+def addtxn(username):
+    if request.method == "GET":
+        return render_template('addtxn.html', username=username)
+    else:
+        data = request.form
+        data = data.to_dict(flat=False)
+        print('form output:', data)
+
+        choice = ''.join(data['formname'])
+
+        if(choice=='raw'):
+            rawName = ''.join(data['raw_product'])
+            print(rawName)
+            out = subprocess.check_output([
+            'node','/home/dhruva/fabric-samples/fabchat/javascript/invoke.js','createRaw',str(username),rawName
+            ]).decode().split('OUTPUT:')[1]
+            out = json.loads(out)
+
+        elif(choice=='purchase'):
+            buyerID = ''.join(data["buyerID"])
+            productID = ''.join(data["productID"])
+            purchaseID = ''.join(data["purchaseID"])
+            out = subprocess.check_output([
+            'node','/home/dhruva/fabric-samples/fabchat/javascript/invoke.js','createPurchase',str(username),buyerID, productID, purchaseID
+            ]).decode().split('OUTPUT:')[1]
+            out = json.loads(out)
+
+        elif(choice=='production'):
+            productName = ''.join(data['product_name'])
+            productID = data['ProductID']
+            purchaseID = data['PurchaseID']
+            subproducts = []
+            s = ""
+            for i in range(len(productID)):
+                s = str(productID[i]) + " " + str(purchaseID[i])
+                subproducts.append(s)
+            
+            sub = ""
+            for ele in subproducts:
+                sub = sub + " " + '"' + ele + '"'
+
+            out = subprocess.check_output([
+            'node','/home/dhruva/fabric-samples/fabchat/javascript/invoke.js','createProduction',str(username),productName,sub
+            ]).decode().split('OUTPUT:')[1]
+            out = json.loads(out)
+
+        USERNAME = usr
+        return redirect(url_for('home'))
+
 
 @app.route('/explore/<id>')
 def explore(id):
