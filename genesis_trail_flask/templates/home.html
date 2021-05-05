@@ -1,13 +1,5 @@
 {% extends 'index.html' %}
 {% block content %}
-<div class="row">
-  <!-- <div class="col s12"> -->
-    <form action="/login" method="post">
-      <input placeholder="Login" style="width:10%" name="username" id="username">
-      <button class="waves-light btn" type="submit"><i class="material-icons">login</i></button>
-  </form>
-  <!-- </div> -->
-</div>
 <div class="width-80" style="margin-left: 10%;">
     <div class="row">
         {% if customer == true %}
@@ -95,6 +87,15 @@
 
   var pending = {{ pending|tojson }};
   var customer = {{ customer|tojson }};
+  var username = {{ username|tojson }};
+
+  if (pending == null) pending = []
+  document.getElementById('username-span').innerHTML = username
+
+  if (customer == false){
+    document.getElementById('login-button-base').innerHTML = 'LOGOUT'
+    document.getElementById('login-button-href').href = '/logout'
+  }
 
   console.log(pending)
   console.log('Pending:',pending)

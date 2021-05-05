@@ -37,8 +37,9 @@ process.argv.forEach(function (val, index, array) {
 });
 
 function printOutput(out){
-    console.log('OUTPUT:')
-    console.log(JSON.stringify(out));
+    console.log('GENESIS TRAIL OUTPUT:')
+
+    console.log(JSON.stringify(JSON.parse(out)));
 }
 
 async function main() {
@@ -70,13 +71,17 @@ async function main() {
         const contract = network.getContract('fabchat');
 
         // Evaluate the specified transaction.
-        console.log('CHOICE:',choice)
+        // console.log('CHOICE:',choice)
         if(choice == 'certificates'){
             const result = await contract.evaluateTransaction('getCertificates',productID);
             printOutput(result)
         }
         else if(choice == 'pending'){
-            const result = await contract.evaluateTransaction('getPendingValidations',user);
+            const result = await contract.evaluateTransaction('getPendingValidations');
+            printOutput(result)
+        }
+        else if(choice == 'txnHistory'){
+            const result = await contract.evaluateTransaction('getTxnHistory');
             printOutput(result)
         }
         else if(choice == 'getAll'){
@@ -97,15 +102,17 @@ async function main() {
             const adminIdentity = gateway.getCurrentIdentity();
 
             const identityService = ca.newIdentityService();
-            console.log('reached here')
+            // console.log('reached here')
             const retrieveIdentity = await identityService.getOne(user,adminIdentity)
             for(let attr of retrieveIdentity.result.attrs){
                 if(attr.name != 'password') continue
                 if(attr.value == pwd){
-                    printOutput('PERMISSION GRANTED!')
+                    console.log('GENESIS TRAIL OUTPUT:')
+                    console.log('PERMISSION GRANTED!')
                 }
                 else{
-                    printOutput('PERMISSION DENIED!')
+                    console.log('GENESIS TRAIL OUTPUT:')
+                    console.log('PERMISSION DENIED!')
                 }
             }
         }        

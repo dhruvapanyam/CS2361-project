@@ -21,18 +21,18 @@ node invoke.js createRaw <username> <prouct_name>
 
 Purchase TXN:
 
-node invoke.js createPurchase <username> <seller> <productID> <purchaseID>
+node invoke.js createPurchase <username> <buyerID> <productID> <purchaseID>
 
 
 Production TXN:
 
-node invoke.js createProduction <username> <product_name> "<rawID> <purID>" " ... " " ... " ...
+node invoke.js createProduction <username> <product_name> "1 2 3 4 5 6..." (even)
 
 */
 
 
 
-let choice, user, farmer_name, location, product_name, certification, user_type, metadata, seller, productID, purchaseID, sub_products, buyer, manufacturer;
+let choice, user, farmer_name, location, product_name, certification, user_type, metadata, seller, productID, purchaseID, sub_products, buyerID, manufacturer;
 
 process.argv.forEach(function (val, index, array) {
     // console.log(index + ': ' + val);
@@ -45,7 +45,7 @@ process.argv.forEach(function (val, index, array) {
 
     else if (choice == 'createPurchase') {
         user = array[3]
-        seller = array[4]
+        buyerID = array[4]
         productID = array[5]
         purchaseID = array[6]
     }
@@ -54,9 +54,11 @@ process.argv.forEach(function (val, index, array) {
         user = array[3]
         product_name = array[4]
         sub_products = []
-        for (let i=5; i < array.length; i++){
-            sub_products.push(array[i].split(' '))
+        let temp = array[5].split(' ')
+        for (let i=0; i < temp.length / 2; i++){
+            sub_products.push([temp[2*i],temp[2*i + 1]])
         }
+        // console.log(sub_products)
     }
 
     else if (choice == 'validatePurchase') {
@@ -108,7 +110,7 @@ async function main() {
         } 
 
         else if (choice === 'createPurchase') {
-            await contract.submitTransaction('createPurchaseTransaction', seller, productID, purchaseID);     // EDIT (pass anonymous flag value to chaincode)
+            await contract.submitTransaction('createPurchaseTransaction', buyerID, productID, purchaseID);     // EDIT (pass anonymous flag value to chaincode)
             console.log(`${choice} Transaction has been submitted`);
         }
 
@@ -123,8 +125,11 @@ async function main() {
         }
 
         else {
-            console.log(`${choice} is invalid!`);
+            throw `${choice} is invalid!`;
         }
+
+        console.log('GENSIS TRAIL OUTPUT:')
+        console.log('Success!')
 
         // Disconnect from the gateway.
         await gateway.disconnect();

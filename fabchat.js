@@ -71,9 +71,13 @@ class FabChat extends Contract {
         console.info('============= START : registerUser ===========')
         let type = 'user'
         data = JSON.parse(data);
+        let txn_history = [];
+        let txn_pending = [];
         const txn = {
             type,
-            data
+            data,
+            txn_history,
+            txn_pending
         }
 
         
@@ -154,20 +158,32 @@ class FabChat extends Contract {
         await ctx.stub.putState(txnID.toString(), Buffer.from(JSON.stringify(txn)));
         console.log('CREATED RAW AT KEY:',txnID)
 
+        let user_entry = await this.getState(ctx, userID);
+        user_entry.txn_history.push({
+            type: 'raw',
+            txnID: txnID
+        })
+
+        await ctx.stub.putState(userID.toString(), Buffer.from(JSON.stringify(user_entry)));
+        console.log("UPDATED USER #",userID,"'S HISTORY")
+
+
+
         console.info('============= END : createRaw ===========');
     }
 
-    async createPurchaseTransaction(ctx, seller, productID, purchaseID) {
+    async createPurchaseTransaction(ctx, buyerID, productID, purchaseID) {
         console.info('============= START : createPurchase ===========');
         
         
 
         let cid = new ClientIdentity(ctx.stub);
-        let userType,buyer;
+        let userType,sellerID;
         userType = cid.getAttributeValue('user_type').toString()
-        buyer = cid.getAttributeValue('userID').toString()
+        sellerID = cid.getAttributeValue('userID').toString()
         console.log('User Type:',userType)
-        console.log('Buyer:',buyer)
+        console.log('Seller:',sellerID)
+        console.log('Buyer:',buyerID)
 
         if (userType != 'vendor' && userType != 'manufacturer') {
             console.log('Expected vendor or manufacturer role')
@@ -182,8 +198,8 @@ class FabChat extends Contract {
         let product_name = await this.getProductName(ctx, productID)
 
         const metadata = {
-            buyer: buyer,
-            seller: seller,
+            buyer: buyerID,
+            seller: sellerID,
             product_name: product_name
         }
 
@@ -199,8 +215,8 @@ class FabChat extends Contract {
         }
 
         console.log(`txn type : ${type}`);
-        console.log(`buyer : ${metadata.buyer}`);
-        console.log(`seller  : ${metadata.seller}`);
+        console.log(`buyer : ${metadata.buyerID}`);
+        console.log(`seller  : ${metadata.sellerID}`);
         console.log(`productID : ${productID}`);
         console.log(`purchaseID : ${purchaseID}`);
 
@@ -208,6 +224,36 @@ class FabChat extends Contract {
 
         await ctx.stub.putState(txnID.toString(), Buffer.from(JSON.stringify(txn)));
         console.log('CREATED PURCHASE AT KEY:',txnID)
+
+
+        /*
+
+        Here, we need to update seller and buyer
+
+        Seller: Append to txn history
+        Buyer: Append to pending txns (once they validate, it'll go to their txn history)
+
+        */
+
+        let seller_entry = await this.getState(ctx, sellerID);
+        seller_entry.txn_history.push({
+            type:'sold',
+            txnID:txnID
+        })
+
+        await ctx.stub.putState(sellerID.toString(), Buffer.from(JSON.stringify(seller_entry)));
+        console.log("UPDATED USER #",sellerID,"'S HISTORY")
+
+        let buyer_entry = await this.getState(ctx, buyerID);
+        buyer_entry.txn_pending.push({
+            type:'bought',
+            txnID:txnID
+        })
+
+        await ctx.stub.putState(buyerID.toString(), Buffer.from(JSON.stringify(buyer_entry)));
+        console.log("UPDATED USER #",buyerID,"'S PENDING")
+
+
         console.info('============= END : createPurchase ===========');
     }
 
@@ -255,6 +301,16 @@ class FabChat extends Contract {
 
         await ctx.stub.putState(txnID.toString(), Buffer.from(JSON.stringify(txn)));
         console.log('CREATED PRODUCTION AT KEY:',txnID)
+
+        let user_entry = await this.getState(ctx, userID);
+        user_entry.txn_history.push({
+            type: 'production',
+            txnID: txnID
+        })
+
+        await ctx.stub.putState(userID.toString(), Buffer.from(JSON.stringify(user_entry)));
+        console.log("UPDATED USER #",userID,"'S HISTORY")
+
         console.info('============= END : createProduction ===========');
     }
 
@@ -288,13 +344,7 @@ class FabChat extends Contract {
 
     async getProductName(ctx,id) {
         let product = await this.getState(ctx,id)
-        // if (product.type != 'purcha'){
-        //     throw 'received request for product name from purchase txn'
-        // }
-
-        // console.log('PRINTING AT GETPRODUCTNAME()')
-        // console.log(product)
-    
+        
         return product.metadata.product_name
     }
 
@@ -445,65 +495,84 @@ class FabChat extends Contract {
         userType = cid.getAttributeValue('user_type').toString()
         userID = cid.getAttributeValue('userID').toString()
 
-        // if(userType != 'vendor' && userType != 'manufacturer'){
-        //     return []
-        // }
-
-        const startKey = '0';
-        const endKey = '99999';
-
-        const iterator = await ctx.stub.getStateByRange(startKey, endKey);
-
-        const allResults = [];
-        while (true) {
-            const res = await iterator.next();
-            if (res.value && res.value.value.toString()) {
-                console.log('valid!',res)
-                // console.log(res.value.value.toString('utf8'));
-
-                const Key = res.value.key;
-                let txn;
-                let ret;
-                console.log('Key:',Key);
-                try {
-                    txn = JSON.parse(res.value.value.toString('utf8'));
-                    console.log('Parsed res.value.value:',txn)
-
-                    if (txn.type != 'purchase') continue;
-
-                    if (txn.metadata.seller == userID && txn.validated == false) {
-                        let u = await this.getState(ctx,txn.metadata.buyer)
-                        if (u.type != 'user') {
-                            throw 'Invalid purchase entry found!'
-                        }
-                        ret = {
-                            txnID: Key,
-                            product_name: txn.metadata.product_name,
-                            buyer: u,
-                            productID: txn.productID
-                        }
-                        console.log('Found 1 pending!',ret)
-                    }
-                    else{
-                        continue;
-                    }
-
-
-
-                } catch (err) {
-                    console.log(err);
-                    ret = res.value.value.toString('utf8');
-                }
-                console.log('pushing:',Key,ret)
-                allResults.push(ret);
+        let user_entry = await this.getState(ctx, userID);
+        let results = []
+        for(let txn of user_entry.txn_pending){
+            let pend_pur = await this.getState(ctx, txn.txnID) // purchaseID
+            if(pend_pur.type != 'purchase'){
+                throw 'Something went wrong! (getPendingValidiations)'
             }
-            if (res.done) {
-                await iterator.close();
-                console.info(allResults);
-                console.info('============= END : queryAllMsgs ===========');
-                return JSON.stringify(allResults);
+
+            results.push({
+                seller: pend_pur.metadata.seller,
+                productID: pend_pur.productID,
+                product_name: pend_pur.metadata.product_name
+            })
+        }
+        console.info('============ END : getPending ============')
+        return JSON.stringify(results)
+    }
+
+    async getTxnHistory(ctx) {
+        // txnID = number of entries
+        console.info('============= START : getPending ===========');
+        let cid = new ClientIdentity(ctx.stub);
+
+        console.info('TXN ID:',txnID);
+        
+        let userType, userID;
+        userType = cid.getAttributeValue('user_type').toString()
+        userID = cid.getAttributeValue('userID').toString()
+
+        let user_entry = await this.getState(ctx, userID);
+        let results = []
+        for(let txn of user_entry.txn_history){
+            let hist = await this.getState(ctx, txn.txnID) // purchaseID
+            if(hist.type == 'bought')
+                results.push({
+                    type: hist.type,
+                    seller: hist.metadata.seller,
+                    txnID: txn.txnID,
+                    productID: hist.productID,
+                    product_name: hist.metadata.product_name
+                })
+            
+            else if(hist.type == 'sold')
+                results.push({
+                    type: hist.type,
+                    buyer: hist.metadata.buyer,
+                    txnID: txn.txnID,
+                    productID: hist.productID,
+                    product_name: hist.metadata.product_name
+                })
+            else if(hist.type == 'raw')
+                results.push({
+                    type: hist.type,
+                    txnID: txn.txnID,
+                    product_name: hist.metadata.product_name
+                })
+            else if(hist.type == 'production'){
+
+                let subp = []
+                for(let sub of hist.sub_products){
+                    let pname = await this.getProductName(ctx, sub[0])
+                    subp.push({
+                        productID: sub[0],
+                        product_name: pname,
+                        purchaseID: sub[1]
+                    })
+                }
+
+                results.push({
+                    type: hist.type,
+                    txnID: txn.txnID,
+                    product_name: hist.metadata.product_name,
+                    sub_products: subp
+                })
             }
         }
+        console.info('============ END : getPending ============')
+        return JSON.stringify(results)
     }
 
     async getCompleteChainstate(ctx){
@@ -555,29 +624,44 @@ class FabChat extends Contract {
         console.info('============= END : viewUser ===========');
         
         return JSON.stringify(entry)
-    }
+    }getPendingValidations
 
     async validatePurchase(ctx, purID){
         console.info('============= START : validate ===========');
 
-        let entry = await this.getState(ctx,purID);
-        if(entry.type != 'purchase'){
+        let purchase_entry = await this.getState(ctx, purID);
+        if(purchase_entry.type != 'purchase'){
             throw 'Cannot validate non-purchase entry!'
+        }
+
+        if (purchase_entry.validated){
+            throw 'Purchase has already been validated!'
         }
 
         let cid = new ClientIdentity(ctx.stub);
         let userID   = cid.getAttributeValue('userID').toString()
 
-        if(entry.metadata.seller != userID){
-            throw 'You do not have permission to validate this purchase!'
+        if (purchase_entry.buyer != userID) {
+            throw 'You cannot validate this purchase!'
         }
 
-        if(entry.validated == true){
-            throw 'Purchase has already been validated!'
+        purchase_entry.validated = true;
+
+        let user_entry = await this.getState(ctx, userID);
+
+        let txn;
+        for(let i=0; i < user_entry.txn_pending.length; i++){
+            if (user_entry.txn_pending[i].txnID == purID){
+                txn = user_entry.txn_pending[i];
+                user_entry.txn_pending = user_entry.txn_pending.filter((x,j) => j!=i)
+                break
+            }
         }
 
-        entry.validated = true
-        await ctx.stub.putState(purID, Buffer.from(JSON.stringify(entry)));
+        user_entry.txn_history.push(txn);
+
+        await ctx.stub.putState(userID.toString(), Buffer.from(JSON.stringify(user_entry)));
+        console.log("UPDATED USER #",userID,"'S HISTORY")
 
         console.info('============= START : validate ===========');
 

@@ -189,7 +189,8 @@ async function main() {
         console.log(`Successfully registered and enrolled admin user ${user} and imported it into the wallet`);
 
 
-        
+        console.log('GENESIS TRAIL OUTPUT:')
+        console.log('Registration successful!')
 
         return;
 
