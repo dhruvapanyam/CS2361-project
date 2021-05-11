@@ -16,23 +16,23 @@ const ccp = JSON.parse(ccpJSON);
 
 Raw TXN:
 
-node invoke.js createRaw <username> <prouct_name>
+node invoke.js createRaw <username> <prouct_name> <quantity> <unit_type>
 
 
 Purchase TXN:
 
-node invoke.js createPurchase <username> <buyerID> <productID> <purchaseID>
+node invoke.js createPurchase <username> <buyerID> <productID> <purchaseID> <quantity>
 
 
 Production TXN:
 
-node invoke.js createProduction <username> <product_name> "1 2 3 4 5 6..." (even)
+node invoke.js createProduction <username> <product_name> "1 2 3 1 2 3..." <quantity> <unit_type>
 
 */
 
 
 
-let choice, user, farmer_name, location, product_name, certification, user_type, metadata, seller, productID, purchaseID, sub_products, buyerID, manufacturer;
+let choice, user, farmer_name, location, product_name, certification, user_type, metadata, seller, productID, purchaseID, sub_products, buyerID, manufacturer, quantity, unit_type;
 
 process.argv.forEach(function (val, index, array) {
     // console.log(index + ': ' + val);
@@ -40,7 +40,9 @@ process.argv.forEach(function (val, index, array) {
 
     if (choice == 'createRaw'){
         user = array[3];
-        product_name = array[4]
+        product_name = array[4];
+        quantity = array[5];
+        unit_type = array[6];
     }
 
     else if (choice == 'createPurchase') {
@@ -48,6 +50,7 @@ process.argv.forEach(function (val, index, array) {
         buyerID = array[4]
         productID = array[5]
         purchaseID = array[6]
+        quantity = array[7];
     }
 
     else if (choice == 'createProduction') {
@@ -55,9 +58,11 @@ process.argv.forEach(function (val, index, array) {
         product_name = array[4]
         sub_products = []
         let temp = array[5].split(' ')
-        for (let i=0; i < temp.length / 2; i++){
-            sub_products.push([temp[2*i],temp[2*i + 1]])
+        for (let i=0; i < temp.length / 3; i++){
+            sub_products.push([temp[3*i],temp[3*i + 1],temp[3*i + 2]])
         }
+        quantity = array[6]
+        unit_type = array[7]
         // console.log(sub_products)
     }
 
@@ -104,18 +109,18 @@ async function main() {
         // flagMsg transaction - requires 2 args , ex: ('flagMsg', 'CAR10', 'Dave')
         if (choice === 'createRaw') {
             // console.log('user type:',user_type)
-            await contract.submitTransaction('createRawTransaction', product_name);
+            await contract.submitTransaction('createRawTransaction', product_name, quantity, unit_type);
             console.log(`${choice} Transaction has been submitted`);
 
         } 
 
         else if (choice === 'createPurchase') {
-            await contract.submitTransaction('createPurchaseTransaction', buyerID, productID, purchaseID);     // EDIT (pass anonymous flag value to chaincode)
+            await contract.submitTransaction('createPurchaseTransaction', buyerID, productID, purchaseID, quantity);     // EDIT (pass anonymous flag value to chaincode)
             console.log(`${choice} Transaction has been submitted`);
         }
 
         else if (choice === 'createProduction') {
-            await contract.submitTransaction('createProductionTransaction', product_name, JSON.stringify(sub_products));     // EDIT (pass anonymous flag value to chaincode)
+            await contract.submitTransaction('createProductionTransaction', product_name, JSON.stringify(sub_products), quantity, unit_type);     // EDIT (pass anonymous flag value to chaincode)
             console.log(`${choice} Transaction has been submitted`);
         }
 
@@ -128,7 +133,7 @@ async function main() {
             throw `${choice} is invalid!`;
         }
 
-        console.log('GENSIS TRAIL OUTPUT:')
+        console.log('GENESIS TRAIL OUTPUT:')
         console.log('Success!')
 
         // Disconnect from the gateway.

@@ -15,19 +15,24 @@
 
     
 </head>
-<body >
-    <nav id="site-navbar" style="margin-bottom: 5%;">
-        <div class="nav-wrapper brown lighten-1" style="padding-left: 1%">
-          <a href="/" class="brand-logo"><i class="material-icons" style="font-size: 30px;">home</i><span id="genesis-trail" class="valign-wrapper" style="font-size: 22px;">GENESIS TRAIL</span></a>
+<body>
+    <div id="bg">
+    <nav id="site-navbar" class="transparent z-depth-0" style="margin-bottom: 5%;">
+        <div class="nav-wrapper" style="padding-left: 1%; background-color: rgba(255,252,240,0.6); color: #004d40;">
+          <a href="/" class="brand-logo"><img src="/static/logo.png" style="height: auto; width: auto; max-height: 250px; max-width: 500px;" alt="Unsplashed background img 1"></a></a>
           <ul class="right hide-on-med-and-down">
+              
             <li><span>Explore: &nbsp;</span></li>
             <li><input id="pId"></li>
-            <li><a onclick="let inp = document.getElementById('pId').value; if (inp.length > 0){window.location.href = '/explore/'+inp;}"><i class="material-icons">search</i></a></li>
+            <li><a class="teal-text text-darken-4" onclick="let inp = document.getElementById('pId').value; if (inp.length > 0){window.location.href = '/explore/'+inp;}"><i class="material-icons">search</i></a></li>
             
-            <li><a href="badges.html"><i class="material-icons">view_module</i></a></li>
-            <li><a href="collapsible.html"><i class="material-icons">refresh</i></a></li>
-            <li><a id="login-button-href" href="/login"><span id="login-button-base">LOGIN</span></a></li>
-            <li><span id="username-span"></span></li>
+            <li><a class="teal-text text-darken-4" href="/addtxn"><i class="material-icons">note_add</i></a></li>
+            {% if customer == true %}
+                <li><a class="teal-text text-darken-4" id="login-button-href" href="/login"><span id="login-button-base">LOGIN</span></a></li>
+            {% else %}
+                <li><a class="teal-text text-darken-4" href="/logout"><span id="login-button-base">LOGOUT</span></a></li>
+            {% endif %}
+            <li><span class="teal-text text-darken-4" id="username-span">{{ username }}</span></li>
           </ul>
         </div>
       </nav>
@@ -36,6 +41,7 @@
     {% block content %}
 
     {% endblock %}
+    </div>
 </body>
 </html>
 
@@ -43,7 +49,8 @@
 <style>
 
 body {
-    background-color: #b5d3d3;
+
+    background-image: url("/static/bg2.jpg");
 
 }
     .subproduct{
@@ -105,5 +112,12 @@ body {
     cursor: pointer;
 }
 
+.home-page-card {
+    background-color: rgba(100,100,100, 0.5);
+}
+
+.egg-white {
+    background-color: #fffcf0;
+}
 
 </style>

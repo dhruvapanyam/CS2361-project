@@ -5,13 +5,23 @@
 'use strict';
 
 const FabricCAServices = require('fabric-ca-client');
-const { FileSystemWallet, X509WalletMixin } = require('fabric-network');
+const { FileSystemWallet, X509WalletMixin,  } = require('fabric-network');
 const fs = require('fs');
 const path = require('path');
 
 const ccpPath = path.resolve(__dirname, '..', '..', 'basic-network', 'connection.json');
 const ccpJSON = fs.readFileSync(ccpPath, 'utf8');
 const ccp = JSON.parse(ccpJSON);
+
+const getMethods = (obj) => {
+    let properties = new Set()
+    let currentObj = obj
+    do {
+      Object.getOwnPropertyNames(currentObj).map(item => properties.add(item))
+    } while ((currentObj = Object.getPrototypeOf(currentObj)))
+    return [...properties.keys()].filter(item => typeof obj[item] === 'function')
+  }
+
 
 async function main() {
     try {
@@ -24,6 +34,9 @@ async function main() {
         const walletPath = path.join(process.cwd(), 'wallet');
         const wallet = new FileSystemWallet(walletPath);
         console.log(`Wallet path: ${walletPath}`);
+        // console.log(JSON.stringify(wallet))
+        // console.log(getMethods(wallet))
+        // return;
 
         // Check to see if we've already enrolled the admin user.
         const adminExists = await wallet.exists('admin');

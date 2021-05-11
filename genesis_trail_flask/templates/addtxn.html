@@ -7,154 +7,240 @@
     </script>
 </head>
 
+<div class="row">
+    <ul class="col s7 collapsible popout" data-collapsible="accordion" style="margin-left:5%;">
+        <li>
+            <div class="collapsible-header egg-white"><i class="material-icons">add_circle</i>Add Raw Material</div>
+            <div class="collapsible-body home-page-card">
+                <span>
+                    <div class="section"></div>
+                    <main>
+                        <center>
+                            <div class="container">
+                                <div class="z-depth-1 egg-white row"
+                                    style="display: inline-block; padding: 32px 48px 0px 48px; border: 1px solid #EEE;">
 
-<ul class="collapsible popout" data-collapsible="accordion" style="margin: 10%">
-    <li>
-        <div class="collapsible-header"><i class="material-icons">add_circle</i>Add Raw Material</div>
-        <div class="collapsible-body blue-grey darken-1">
-            <span>
-                <div class="section"></div>
-                <main>
-                    <center>
-                        <div class="container">
-                            <div class="z-depth-1 grey lighten-4 row"
-                                style="display: inline-block; padding: 32px 48px 0px 48px; border: 1px solid #EEE;">
-
-                                <form class="col s12" name="raw" action="/addtxn" method="post">
-                                    <div class='row'>
-                                        <div class='col s12'>
-                                        </div>
-                                    </div>
-
-                                    
-
-                                    <div class='row'>
-                                        <div class='input-field col s12'>
-                                            <input class='validate' type='text' name='raw_product' id='raw_product' />
-                                            <label for='raw_product'>Enter the product name</label>
-                                        </div>
-                                    </div>
-                                    <br />
-                                    <center>
+                                    <form class="col s12" name="raw" action="/addtxn" method="post">
                                         <div class='row'>
-                                            <button type='submit' name='btn_raw'
-                                                class='col s12 btn btn-large waves-effect brown lighten-1'>Add
-                                                Transaction</button>
+                                            <div class='col s12'>
+                                            </div>
                                         </div>
-                                    </center>
-                                    <input type="hidden" id="formname" name="formname" value="raw">
-                                </form>
-                            </div>
-                        </div>
-                    </center>
-            </span>
-        </div>
-    </li>
-    <li>
-        <div class="collapsible-header"><i class="material-icons">add_circle</i>Add a Purchase</div>
-        <div class="collapsible-body blue-grey darken-1">
-            <span>
-                <div class="section"></div>
-                <main>
-                    <center>
-                        <div class="container">
-                            <div class="z-depth-1 grey lighten-4 row"
-                                style="display: inline-block; padding: 10px 48px 0px 48px; border: 1px solid #EEE;">
 
-                                <form class="col s12" name="purchase" action="/addtxn" method="post">
-                                    <div class='row'>
-                                        <div class='col s12'>
-                                        </div>
-                                    </div>
+                                        
 
-                                    
-
-                                    <div class='row'>
-                                        <div class='input-field col s12'>
-                                            <input class='validate' type='text' name='buyerID' id='buyerID' />
-                                            <label for='buyerID'>Enter the buyer ID</label>
-                                        </div>
-                                    </div>
-                                    <div class='row'>
-                                        <div class='input-field col s12'>
-                                            <input class='validate' type='text' name='purchaseID' id='purchaseID' />
-                                            <label for='purchaseID'>Enter the purchase ID</label>
-                                        </div>
-                                    </div>
-                                    <div class='row'>
-                                        <div class='input-field col s12'>
-                                            <input class='validate' type='text' name='productID' id='productID' />
-                                            <label for='productID'>Enter the product ID</label>
-                                        </div>
-                                    </div>
-                                    <br />
-                                    <center>
                                         <div class='row'>
-                                            <button type='submit' name='btn_purchase'
-                                                class='col s12 btn btn-large waves-effect brown lighten-1'>Add
-                                                Transaction</button>
+                                            <div class='input-field col s12'>
+                                                <input class='validate' type='text' name='raw_product' id='raw_product' />
+                                                <label for='raw_product'>Enter the product name</label>
+                                            </div>
                                         </div>
-                                    </center>
-                                    <input type="hidden" id="formname" name="formname" value="purchase">
-                                </form>
-                            </div>
-                        </div>
-                    </center>
-            </span>
-        </div>
-    </li>
-    <li>
-        <div class="collapsible-header"><i class="material-icons">add_circle</i>Add a Production</div>
-        <div class="collapsible-body blue-grey darken-1">
-            <span>
-                <div class="section"></div>
-                <main>
-                    <center>
-                        <div class="container">
-                            <div class="z-depth-1 grey lighten-4 row"
-                                style="display: inline-block; padding: 32px 48px 0px 48px; border: 1px solid #EEE;">
-
-                                <form class="col s12" name="product" action="/addtxn" method="post">
-                                    <div class='row'>
-                                        <div class='col s12'>
-                                        </div>
-                                    </div>
-
-                                    
-
-                                    <div class='row'>
-                                        <div class='input-field col s12'>
-                                            <input class='validate' type='text' name='product_name' id='product_name' />
-                                            <label for='product_name'>Enter the product name</label>
-                                        </div>
-                                    </div>
-
-                                    <div id="dynamicCheck">
-                                        <button type="button" class = "btn-flat waves-effect waves-dark-grey-darken-1" onclick="createNewElement()">
-                                            <i class = "material-icons left">add</i>Add Subproduct</button></td>
-                                     </div>
-                                     
-                                     <br />
-                                     <br />
-                                     <div id="subproducts"></div>
-                                     
-                                    <br />
-                                    <center>
                                         <div class='row'>
-                                            <button type='submit' name='btn_product'
-                                                class='col s12 btn btn-large waves-effect brown lighten-1'>Add
-                                                Transaction</button>
+                                            <div class='input-field col s12'>
+                                                <input class='validate' type='number' name='raw_product_quantity' id='raw_product_quantity' />
+                                                <label for='raw_product_quantity'>Enter the quantity produced</label>
+                                            </div>
                                         </div>
-                                    </center>
-                                    <input type="hidden" id="formname" name="formname" value="production">
-                                </form>
+                                        <div class='row'>
+                                            <div class='input-field col s12'>
+                                                <input class='validate' type='text' name='raw_product_unit' id='raw_product_unit' />
+                                                <label for='raw_product_unit'>Enter the unit (kg, L, etc)</label>
+                                            </div>
+                                        </div>
+                                        <br />
+                                        <center>
+                                            <div class='row'>
+                                                <button type='submit' name='btn_raw'
+                                                    class='col s12 btn btn-large waves-effect grey darken-3'>Add
+                                                    Transaction</button>
+                                            </div>
+                                        </center>
+                                        <input type="hidden" id="formname" name="formname" value="raw">
+                                    </form>
+                                </div>
                             </div>
-                        </div>
+                        </center>
+                </span>
+            </div>
+        </li>
+        <li>
+            <div class="collapsible-header egg-white"><i class="material-icons">add_circle</i>Add a Purchase</div>
+            <div class="collapsible-body home-page-card">
+                <span>
+                    <div class="section"></div>
+                    <main>
+                        <center>
+                            <div class="container">
+                                <div class="z-depth-1  egg-white row"
+                                    style="display: inline-block; padding: 10px 48px 0px 48px; border: 1px solid #EEE;">
+
+                                    <form class="col s12" name="purchase" action="/addtxn" method="post">
+                                        <div class='row'>
+                                            <div class='col s12'>
+                                            </div>
+                                        </div>
+
+                                        
+
+                                        <div class='row'>
+                                            <div class='input-field col s12'>
+                                                <input class='validate' type='text' name='buyerID' id='buyerID' />
+                                                <label for='buyerID'>Enter the buyer ID</label>
+                                            </div>
+                                        </div>
+                                        <div class='row'>
+                                            <div class='input-field col s12'>
+                                                <input class='validate' type='text' name='purchaseID' id='purchaseID' />
+                                                <label for='purchaseID'>Enter the purchase ID</label>
+                                            </div>
+                                        </div>
+                                        <div class='row'>
+                                            <div class='input-field col s12'>
+                                                <input class='validate' type='text' name='productID' id='productID' />
+                                                <label for='productID'>Enter the product ID</label>
+                                            </div>
+                                        </div>
+                                        <div class='row'>
+                                            <div class='input-field col s12'>
+                                                <input class='validate' type='number' name='purchase_quantity' id='purchase_quantity' />
+                                                <label for='purchase_quantity'>Enter quantity sold</label>
+                                            </div>
+                                        </div>
+                                        <br />
+                                        
+                                        <center>
+                                            <div class='row'>
+                                                <button type='submit' name='btn_purchase'
+                                                    class='col s12 btn btn-large waves-effect grey darken-3'>Add
+                                                    Transaction</button>
+                                            </div>
+                                        </center>
+                                        <input type="hidden" id="formname" name="formname" value="purchase">
+                                    </form>
+                                </div>
+                                
+                            </div>
+                            <center>
+                                <div class="row">
+                                {% for txn in txn_history %}
+                                    {% if ((txn.type == 'raw' or txn.type == 'production') and storage[txn.txnID|string].quantity[0] > 0) %}
+                                    <div class="col s3">
+                                        <div class="z-depth-5" style="color: #fffcf0; width: 95%; margin:2.5%;border: 10px solid; cursor:pointer; background-color: rgba(0, 77, 64, 0.4);" onclick="document.getElementById('productID').value = '{{txn.txnID|string}}';document.getElementById('purchaseID').value = 'null';">
+                                            <b>{{txn.product_name}}</b><hr style="width: 90%;">
+                                            Product ID: {{ txn.txnID }}<br>
+                                            Storage: {{ storage[txn.txnID|string].quantity|join(' ') }}<br>
+                                        </div>
+                                    </div>
+                                    {% elif (txn.type == 'bought' and storage[txn.productID|string].quantity[0] > 0) %}
+                                    <div class="col s3">
+                                        <div class="z-depth-5" style="color: #fffcf0; width: 95%; margin:2.5%; ;border: 1px solid; cursor:pointer;  background-color: rgba(0, 77, 64, 0.4);" onclick="document.getElementById('productID').value = '{{txn.productID}}';document.getElementById('purchaseID').value = '{{txn.txnID|string}}';">
+                                            <b>{{txn.product_name}}</b><hr style="width: 90%;">
+                                            Product ID: {{ txn.productID }}<br>
+                                            Seller: {{ txn.seller }}<br>
+                                            Storage: {{ storage[txn.productID|string].quantity|join(' ') }}<br>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                                </div>
+                            </center>
                     </center>
-            </span>
-        </div>
-    </li>
-</ul>
+                </span>
+            </div>
+        </li>
+        <li>
+            <div class="collapsible-header egg-white"><i class="material-icons">add_circle</i>Add a Production</div>
+            <div class="collapsible-body home-page-card">
+                <span>
+                    <div class="section"></div>
+                    <main>
+                        <center>
+                            <div class="container">
+                                <div class="z-depth-1 grey lighten-4 row"
+                                    style="display: inline-block; padding: 32px 48px 0px 48px; border: 1px solid #EEE;">
+
+                                    <form class="col s12" name="product" action="/addtxn" method="post">
+                                        <div class='row'>
+                                            <div class='col s12'>
+                                            </div>
+                                        </div>
+
+                                        
+
+                                        <div class='row'>
+                                            <div class='input-field col s12'>
+                                                <input class='validate' type='text' name='product_name' id='product_name' />
+                                                <label for='product_name'>Enter the product name</label>
+                                            </div>
+                                        </div>
+
+                                        <div id="dynamicCheck">
+                                            <button type="button" class = "btn-flat waves-effect waves-dark-grey-darken-1" onclick="createNewElement()">
+                                                <i class = "material-icons left">add</i>Add Subproduct</button></td>
+                                        </div>
+                                        
+                                        <br />
+                                        <br />
+                                        <div id="subproducts"></div>
+                                        
+                                        <br />
+                                        <center>
+                                            <div class='row'>
+                                                <button type='submit' name='btn_product'
+                                                    class='col s12 btn btn-large waves-effect brown lighten-1'>Add
+                                                    Transaction</button>
+                                            </div>
+                                        </center>
+                                        <input type="hidden" id="formname" name="formname" value="production">
+                                    </form>
+                                </div>
+                            </div>
+                        </center>
+                </span>
+            </div>
+        </li>
+    </ul>
+
+    <div class="col s4 home-page-card" style="text-align: center;color: #fffcf0;">
+        <h5>Transaction History</h5>
+        <ul id="lifecycle" class="collection">
+            {% for hist in txn_history %}
+                {% if hist.type != 'sold' %}
+                <li class="collection-item row" style="background-color: rgba(0, 77, 64, 0.4);">
+                    <div class="col s6">
+                        <p>
+                            <b>Product Name: {{ hist.product_name }}</b><br>
+                            
+                            {% if hist.type == 'bought' %}
+
+                                Product ID: {{ hist.productID }}<br>
+                                Purchase ID: {{ hist.txnID }}<br>
+                                Seller: {{ hist.seller }}<br>
+                            
+                            {% elif hist.type == 'production' %}
+
+                                Product ID: {{ hist.txnID }}<br>
+                                Sub-products: {{ hist.sub_products }}<br>
+
+                            {% elif hist.type == 'raw' %}
+
+                                Product ID: {{ hist.txnID }}<br>
+
+                            {% endif %}
+                            <!-- {{ hist}} -->
+                        </p>
+                    </div>
+                    <div class="col s6" style="text-align: center;">
+                        <p><b>{{ hist.type.upper() }}</b></p>
+
+                    </div>
+                </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+
+</div>
+
 
 <script>
     function createNewElement() {
@@ -167,6 +253,11 @@
 
     // Finally put it where it is supposed to appear.
 	document.getElementById("subproducts").appendChild(txtNewInputBox);
+
+
+    function populatePurchaseForm(txn){
+        document.getElementById('productID').value = txn.productID
+    }
 }
 </script>
 

@@ -2,29 +2,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-
-
-
- /*
-    Dhruva Panyam - 04/04/2021
-    All edits for CS2349 A3P2 has been commented within "-------EDIT -------" blocks
- */
-
 'use strict';
 
 const {Contract} = require('fabric-contract-api');
 const ClientIdentity = require('fabric-shim').ClientIdentity;
 
-const getMethods = (obj) => {
-    let properties = new Set()
-    let currentObj = obj
-    do {
-      Object.getOwnPropertyNames(currentObj).map(item => properties.add(item))
-    } while ((currentObj = Object.getPrototypeOf(currentObj)))
-    return [...properties.keys()].filter(item => typeof obj[item] === 'function')
-  }
-
-// txnID of last msg that was posted
+// msgID of last msg that was posted
 let txnID = -1;
 // list of users
 let users = [];
@@ -73,11 +56,13 @@ class FabChat extends Contract {
         data = JSON.parse(data);
         let txn_history = [];
         let txn_pending = [];
+        let storage = {};
         const txn = {
             type,
             data,
             txn_history,
-            txn_pending
+            txn_pending,
+            storage
         }
 
         
@@ -92,11 +77,12 @@ class FabChat extends Contract {
         return JSON.stringify(txnID)
     }
 
-    async createRawTransaction(ctx, product_name) {
+    async createRawTransaction(ctx, product_name, quantity, unit_type) {
         console.info('============= START : createRaw ===========')
         
+        quantity = parseFloat(quantity);
         
-
+        console.log(product_name, quantity,unit_type)
         let cid = new ClientIdentity(ctx.stub)
 
         let userType, userID, certificate, producer;
@@ -141,7 +127,9 @@ class FabChat extends Contract {
         const txn = {
             type,
             metadata,
-            certification
+            certification,
+            unit_type,
+            quantity
         }
 
         
@@ -164,6 +152,12 @@ class FabChat extends Contract {
             txnID: txnID
         })
 
+        // Add this product to the farmer's storage
+        user_entry.storage[txnID] = [quantity,unit_type];
+
+        console.log('User\'s storage:',user_entry.storage)
+        console.log('supposed to be:',[quantity,unit_type])
+
         await ctx.stub.putState(userID.toString(), Buffer.from(JSON.stringify(user_entry)));
         console.log("UPDATED USER #",userID,"'S HISTORY")
 
@@ -172,11 +166,10 @@ class FabChat extends Contract {
         console.info('============= END : createRaw ===========');
     }
 
-    async createPurchaseTransaction(ctx, buyerID, productID, purchaseID) {
+    async createPurchaseTransaction(ctx, buyerID, productID, purchaseID, quantity) {
         console.info('============= START : createPurchase ===========');
         
-        
-
+        quantity = parseFloat(quantity);
         let cid = new ClientIdentity(ctx.stub);
         let userType,sellerID;
         userType = cid.getAttributeValue('user_type').toString()
@@ -184,9 +177,10 @@ class FabChat extends Contract {
         console.log('User Type:',userType)
         console.log('Seller:',sellerID)
         console.log('Buyer:',buyerID)
+        console.log('Quantity:',quantity)
 
-        if (userType != 'vendor' && userType != 'manufacturer') {
-            console.log('Expected vendor or manufacturer role')
+        if (userType == 'user') {
+            console.log('Expected farmer or vendor or manufacturer role')
             throw 'non-purchase user role'
         }
 
@@ -206,24 +200,35 @@ class FabChat extends Contract {
         let type = 'purchase'
         let validated = false;
         if (purchaseID == 'null') purchaseID = null
+        else {
+            let entry = await this.getState(ctx,purchaseID);
+            if (entry.type != 'purchase'){
+                throw 'This is not a valid purchaseID!'
+            }
+            if (entry.validated == false){
+                throw 'The previous purchase has not been validated!'
+            }
+
+            
+        }
         const txn = {
             type,
             metadata,
             productID,
             purchaseID,
-            validated
+            validated,
+            quantity
         }
 
         console.log(`txn type : ${type}`);
-        console.log(`buyer : ${metadata.buyerID}`);
-        console.log(`seller  : ${metadata.sellerID}`);
+        console.log(`buyer : ${metadata.buyer}`);
+        console.log(`seller  : ${metadata.seller}`);
         console.log(`productID : ${productID}`);
         console.log(`purchaseID : ${purchaseID}`);
 
         txnID += 1;
 
-        await ctx.stub.putState(txnID.toString(), Buffer.from(JSON.stringify(txn)));
-        console.log('CREATED PURCHASE AT KEY:',txnID)
+        
 
 
         /*
@@ -236,6 +241,11 @@ class FabChat extends Contract {
         */
 
         let seller_entry = await this.getState(ctx, sellerID);
+
+        if (seller_entry.storage[productID][0] < quantity){
+            throw 'Insufficient material in storage!'
+        }
+
         seller_entry.txn_history.push({
             type:'sold',
             txnID:txnID
@@ -253,14 +263,18 @@ class FabChat extends Contract {
         await ctx.stub.putState(buyerID.toString(), Buffer.from(JSON.stringify(buyer_entry)));
         console.log("UPDATED USER #",buyerID,"'S PENDING")
 
+        await ctx.stub.putState(txnID.toString(), Buffer.from(JSON.stringify(txn)));
+        console.log('CREATED PURCHASE AT KEY:',txnID)
 
         console.info('============= END : createPurchase ===========');
     }
 
-    async createProductionTransaction(ctx, product_name, sub_products_json) {
+    async createProductionTransaction(ctx, product_name, sub_products_json, quantity, unit_type) {
         console.info('============= START : createProduction ===========');
 
         let cid = new ClientIdentity(ctx.stub);
+
+        quantity = parseFloat(quantity)
         
         let userType, userID, producer;
         userType = cid.getAttributeValue('user_type').toString()
@@ -281,6 +295,28 @@ class FabChat extends Contract {
         }
         const sub_products = JSON.parse(sub_products_json)
 
+        for(let subp of sub_products){
+            let entry = await this.getState(ctx, subp[1])
+            if (entry.type != 'purchase'){
+                throw 'Invalid sub_product!'
+            }
+            if (entry.validated == false){
+                throw 'Sub product has not been validated!'
+            }
+        }
+
+        let manuf_entry = await this.getState(ctx, userID);
+        
+        for(let subp of sub_products){
+            let q = subp[2];    // subp = [prodID,purID,quan]
+            let prodID = subp[0];
+            manuf_entry.storage[prodID][0] -= q;
+
+            if(manuf_entry.storage[prodID][0] < 0){
+                throw 'Insufficient material in storage!'
+            }
+        }
+
         /*
         metadata:
             product_name,
@@ -291,6 +327,8 @@ class FabChat extends Contract {
             type,
             metadata,
             sub_products,
+            unit_type,
+            quantity
         }
 
         console.log(`txn type : ${type}`);
@@ -302,33 +340,18 @@ class FabChat extends Contract {
         await ctx.stub.putState(txnID.toString(), Buffer.from(JSON.stringify(txn)));
         console.log('CREATED PRODUCTION AT KEY:',txnID)
 
-        let user_entry = await this.getState(ctx, userID);
-        user_entry.txn_history.push({
+        manuf_entry.txn_history.push({
             type: 'production',
             txnID: txnID
         })
 
-        await ctx.stub.putState(userID.toString(), Buffer.from(JSON.stringify(user_entry)));
+        manuf_entry.storage[txnID] = [quantity,unit_type]
+
+        await ctx.stub.putState(userID.toString(), Buffer.from(JSON.stringify(manuf_entry)));
         console.log("UPDATED USER #",userID,"'S HISTORY")
 
         console.info('============= END : createProduction ===========');
     }
-
-
-    // -----------------------------------------------------------------------------------------------------
-
-
-    /*
-
-    queryTxn:
-        input = productID
-        output = {
-            certificates: [...],
-            purchase_history: <Tree_Root>
-        }
-
-
-    */
 
     async getState(ctx,id) {
         const txnAsBytes = await ctx.stub.getState(id); // get the msg from chaincode state
@@ -365,6 +388,8 @@ class FabChat extends Contract {
         let data = {
             product_name: product.metadata.product_name,
             certification: product.certification,
+            quantity: product.quantity,
+            unit_type: product.unit_type,
             manufacturer: {
                 userID: product.metadata.userID,
                 name: product.metadata.producer
@@ -408,7 +433,6 @@ class FabChat extends Contract {
     
        
     }
-
 
     async queryMaster(ctx, productID) {
         console.info('============= START : queryProductByID ===========');
@@ -476,13 +500,10 @@ class FabChat extends Contract {
         return certificates
     }
 
-
-    
     async getCertificatesMaster(ctx, id) {
         let certificates = await this.getCertificates(ctx,id)
         return JSON.stringify(certificates)
     }
-
 
     async getPendingValidations(ctx) {
         // txnID = number of entries
@@ -496,26 +517,58 @@ class FabChat extends Contract {
         userID = cid.getAttributeValue('userID').toString()
 
         let user_entry = await this.getState(ctx, userID);
+        // return JSON.stringify(user_entry.txn_pending);
         let results = []
         for(let txn of user_entry.txn_pending){
-            let pend_pur = await this.getState(ctx, txn.txnID) // purchaseID
+            let pend_pur = await this.getState(ctx, String(txn.txnID)) // purchaseID
             if(pend_pur.type != 'purchase'){
                 throw 'Something went wrong! (getPendingValidiations)'
             }
-
+            let prod = await this.getState(ctx, pend_pur.productID);
+            let unit_type = prod.unit_type;
+            let seller_name = await this.getState(ctx, pend_pur.metadata.seller);
+            seller_name = seller_name.data.full_name;
             results.push({
                 seller: pend_pur.metadata.seller,
+                seller_name:seller_name,
                 productID: pend_pur.productID,
-                product_name: pend_pur.metadata.product_name
+                txnID: txn.txnID,
+                purchaseID: txn.txnID,
+                product_name: pend_pur.metadata.product_name,
+                quantity: pend_pur.quantity,
+                unit_type: unit_type
             })
         }
         console.info('============ END : getPending ============')
         return JSON.stringify(results)
     }
 
+    async getStorage(ctx) {
+
+        console.info('============= START : getStorage ===========');
+        let cid = new ClientIdentity(ctx.stub);
+
+        // console.info('TXN ID:',txnID);
+        
+        let userID;
+        // userType = cid.getAttributeValue('user_type').toString()
+        userID = cid.getAttributeValue('userID').toString()
+        let result = {};
+        let user_entry = await this.getState(ctx, userID);
+        for(let item in user_entry.storage){
+            let pname = await this.getProductName(ctx, item)
+            result[item] = {
+                product_name: pname,
+                quantity: user_entry.storage[item]
+            }
+        }
+
+        return JSON.stringify(result)
+    }
+
     async getTxnHistory(ctx) {
         // txnID = number of entries
-        console.info('============= START : getPending ===========');
+        console.info('============= START : getHistory ===========');
         let cid = new ClientIdentity(ctx.stub);
 
         console.info('TXN ID:',txnID);
@@ -525,49 +578,81 @@ class FabChat extends Contract {
         userID = cid.getAttributeValue('userID').toString()
 
         let user_entry = await this.getState(ctx, userID);
+
+        // return JSON.stringify(user_entry.txn_history);
         let results = []
         for(let txn of user_entry.txn_history){
-            let hist = await this.getState(ctx, txn.txnID) // purchaseID
-            if(hist.type == 'bought')
+            let hist = await this.getState(ctx, String(txn.txnID)) 
+            console.log(txn.txnID)
+            if(txn.type == 'bought'){
+                let prod = await this.getState(ctx, hist.productID)
+                let unit_type = prod.unit_type;
+                let seller_entry = await this.getState(ctx, hist.metadata.seller);
+                let seller_name = seller_entry.data.full_name;
                 results.push({
-                    type: hist.type,
+                    type: txn.type,
                     seller: hist.metadata.seller,
+                    seller_name: seller_name,
+                    purchaseID: txn.txnID,
                     txnID: txn.txnID,
                     productID: hist.productID,
-                    product_name: hist.metadata.product_name
+                    product_name: hist.metadata.product_name,
+                    quantity: hist.quantity,
+                    unit_type: unit_type
                 })
-            
-            else if(hist.type == 'sold')
+            }
+            else if(txn.type == 'sold'){
+                let prod = await this.getState(ctx, hist.productID)
+                let unit_type = prod.unit_type;
+                let buyer_entry = await this.getState(ctx, hist.metadata.buyer);
+                let buyer_name = buyer_entry.data.full_name;
+                
                 results.push({
-                    type: hist.type,
+                    type: txn.type,
                     buyer: hist.metadata.buyer,
+                    buyer_name: buyer_name,
+                    purchaseID: txn.txnID,
                     txnID: txn.txnID,
                     productID: hist.productID,
-                    product_name: hist.metadata.product_name
+                    product_name: hist.metadata.product_name,
+                    quantity: hist.quantity,
+                    unit_type: unit_type,
+                    validated: hist.validated
                 })
-            else if(hist.type == 'raw')
+            }
+            else if(txn.type == 'raw')
                 results.push({
-                    type: hist.type,
+                    type: txn.type,
                     txnID: txn.txnID,
-                    product_name: hist.metadata.product_name
+                    productID: txn.txnID,
+                    product_name: hist.metadata.product_name,
+                    quantity: hist.quantity,
+                    unit_type: hist.unit_type
                 })
-            else if(hist.type == 'production'){
+            else if(txn.type == 'production'){
 
                 let subp = []
                 for(let sub of hist.sub_products){
-                    let pname = await this.getProductName(ctx, sub[0])
+                    let pname = await this.getProductName(ctx, sub[0]);
+                    let unit = await this.getState(ctx, sub[0]);
+                    unit = unit.unit_type
                     subp.push({
                         productID: sub[0],
                         product_name: pname,
-                        purchaseID: sub[1]
+                        purchaseID: sub[1],
+                        quantity: sub[2],
+                        unit_type: unit
                     })
                 }
 
                 results.push({
-                    type: hist.type,
+                    type: txn.type,
                     txnID: txn.txnID,
+                    productID: txn.txnID,
                     product_name: hist.metadata.product_name,
-                    sub_products: subp
+                    sub_products: subp,
+                    quantity: hist.quantity,
+                    unit_type: hist.unit_type
                 })
             }
         }
@@ -624,7 +709,7 @@ class FabChat extends Contract {
         console.info('============= END : viewUser ===========');
         
         return JSON.stringify(entry)
-    }getPendingValidations
+    }
 
     async validatePurchase(ctx, purID){
         console.info('============= START : validate ===========');
@@ -641,13 +726,34 @@ class FabChat extends Contract {
         let cid = new ClientIdentity(ctx.stub);
         let userID   = cid.getAttributeValue('userID').toString()
 
-        if (purchase_entry.buyer != userID) {
+        if (purchase_entry.metadata.buyer != userID) {
             throw 'You cannot validate this purchase!'
         }
 
-        purchase_entry.validated = true;
 
-        let user_entry = await this.getState(ctx, userID);
+
+        // ------------ check if seller has enough to sell
+
+        let seller_entry = await this.getState(ctx, purchase_entry.metadata.seller);
+
+        if (seller_entry.storage[purchase_entry.productID][0] < parseFloat(purchase_entry.quantity)){
+            throw 'Seller does not have the specified amount!'
+        }
+
+        // else
+
+        seller_entry.storage[purchase_entry.productID][0] -= parseFloat(purchase_entry.quantity);
+
+        await ctx.stub.putState(purchase_entry.metadata.seller.toString(), Buffer.from(JSON.stringify(seller_entry)));
+
+
+
+
+
+        purchase_entry.validated = true;
+        await ctx.stub.putState(purID.toString(), Buffer.from(JSON.stringify(purchase_entry)));
+
+        let user_entry = await this.getState(ctx, userID); //buyer
 
         let txn;
         for(let i=0; i < user_entry.txn_pending.length; i++){
@@ -660,14 +766,23 @@ class FabChat extends Contract {
 
         user_entry.txn_history.push(txn);
 
+        let prodID = purchase_entry.productID;
+        let quan = parseFloat(purchase_entry.quantity);
+        let unit = seller_entry.storage[prodID][1];
+
+        if(user_entry.storage[prodID] != undefined){
+            user_entry.storage[prodID][0] += quan;
+        }
+        else{
+            user_entry.storage[prodID] = [quan,unit];
+        }
+
         await ctx.stub.putState(userID.toString(), Buffer.from(JSON.stringify(user_entry)));
         console.log("UPDATED USER #",userID,"'S HISTORY")
 
         console.info('============= START : validate ===========');
 
     }
-
-    
 
 }
 

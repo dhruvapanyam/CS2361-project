@@ -42,6 +42,7 @@ process.argv.forEach(function (val, index, array) {
             uName = array[4];
             uLoc = array[5];
             fCert = array[6];
+            if (fCert == 'null') fCert = null
             pwd = array[7];
             break
 

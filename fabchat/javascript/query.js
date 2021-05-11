@@ -84,6 +84,10 @@ async function main() {
             const result = await contract.evaluateTransaction('getTxnHistory');
             printOutput(result)
         }
+        else if(choice == 'storage'){
+            const result = await contract.evaluateTransaction('getStorage');
+            printOutput(result)
+        }
         else if(choice == 'getAll'){
             const result = await contract.evaluateTransaction('getCompleteChainstate',user);
             printOutput(result)
