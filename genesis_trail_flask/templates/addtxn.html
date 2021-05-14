@@ -9,6 +9,7 @@
 
 <div class="row">
     <ul class="col s7 collapsible popout" data-collapsible="accordion" style="margin-left:5%;">
+        {% if user_type == 'farmer' %}
         <li>
             <div class="collapsible-header egg-white"><i class="material-icons">add_circle</i>Add Raw Material</div>
             <div class="collapsible-body home-page-card">
@@ -62,6 +63,7 @@
                 </span>
             </div>
         </li>
+        {% endif %}
         <li>
             <div class="collapsible-header egg-white"><i class="material-icons">add_circle</i>Add a Purchase</div>
             <div class="collapsible-body home-page-card">
@@ -121,6 +123,7 @@
                                 
                             </div>
                             <div class="col s6">
+                                <h5 style="color: #fffcf0;">Choose a product to sell:</h5>
                                 <ul class="">
                                     <!-- <form> -->
                                     {% for item in storage %}
@@ -179,6 +182,7 @@
                 </span>
             </div>
         </li>
+        {% if user_type == 'manufacturer' %}
         <li>
             <div class="collapsible-header egg-white"><i class="material-icons">add_circle</i>Add a Production</div>
             <div class="collapsible-body home-page-card">
@@ -254,6 +258,7 @@
                             </div>
 
                             <div class="col s6">
+                                <h5 style="color: #fffcf0;">Choose sub-products for the production:</h5>
                                 <ul class="">
                                     <!-- <form> -->
                                     {% for item in storage %}
@@ -288,6 +293,7 @@
                 </span>
             </div>
         </li>
+        {% endif %}
     </ul>
 
     <div class="col s4 home-page-card" style="text-align: center;color: #fffcf0;">

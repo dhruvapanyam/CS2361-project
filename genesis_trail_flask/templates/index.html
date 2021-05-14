@@ -23,16 +23,16 @@
           <ul class="right hide-on-med-and-down">
               
             <li><span>Explore: &nbsp;</span></li>
-            <li><input id="pId"></li>
+            <li><input placeholder="Enter product/purchase ID" id="pId"></li>
             <li><a class="teal-text text-darken-4" onclick="let inp = document.getElementById('pId').value; if (inp.length > 0){window.location.href = '/explore/'+inp;}"><i class="material-icons">search</i></a></li>
             
             <li><a class="teal-text text-darken-4" href="/addtxn"><i class="material-icons">note_add</i></a></li>
-            {% if customer == true %}
+            {% if user_type == 'customer' %}
                 <li><a class="teal-text text-darken-4" id="login-button-href" href="/login"><span id="login-button-base">LOGIN</span></a></li>
             {% else %}
                 <li><a class="teal-text text-darken-4" href="/logout"><span id="login-button-base">LOGOUT</span></a></li>
+                <li><span class="teal-text text-darken-4" style="margin-right: 10px" id="username-span">{{ username }} (ID: {{userID}})</span></li>
             {% endif %}
-            <li><span class="teal-text text-darken-4" style="margin-right: 10px" id="username-span">{{ username }}</span></li>
           </ul>
         </div>
       </nav>

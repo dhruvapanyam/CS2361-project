@@ -14,8 +14,36 @@
     {% block content %}
 
     {% endblock %}
+    <a id="modal2-trigger" style="display: none;" class="waves-effect waves-light btn modal-trigger" href="#modal2">Modal</a>
+
+  <!-- Modal Structure -->
+  <div id="modal2" class="modal">
+    <div class="modal-content">
+      <h4>Alerts</h4>
+      <p id="alerts-modal2-content"></p>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
+    </div>
+  </div>
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script src="/static/js/materialize.js"></script>
     <script src="/static/js/init.js"></script>
 </body>
 </html>
+
+<script>
+
+document.addEventListener('DOMContentLoaded',()=>{
+    let als = JSON.parse('{{alerts|tojson}}')
+    console.log(als)
+    if(als.length > 0) {
+        let alerts_modal = document.getElementById('alerts-modal2-content')
+        alerts_modal.innerHTML = ''
+        for(let al of als){
+            alerts_modal.innerHTML += al + '<br>'
+        }
+        document.getElementById('modal2-trigger').click()
+    }
+})
+</script>

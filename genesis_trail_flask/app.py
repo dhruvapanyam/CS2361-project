@@ -5,22 +5,32 @@ import random
 from flask import Flask, render_template, request,redirect, url_for
 app = Flask(__name__)
 
+
+PATH_DIR = '/home/dhruva/fabric-samples/genesistrail/javascript/'
+COMMAND = 'node'
+
 USERNAME = 'customer'
-customer = True
+USER_ID = -1
+USER_TYPE = 'customer'
 alerts = []
 
 @app.context_processor
 def inject_stage_and_region():
     global USERNAME
-    global customer
+    global USER_ID
+    global USER_TYPE
     global alerts
     # print('injecting!')
     temp_alerts = [al for al in alerts]
     alerts = []
 
-    return dict(username=USERNAME,customer=customer, alerts=temp_alerts)
+    return dict(username=USERNAME, userID=USER_ID, user_type=USER_TYPE, alerts=temp_alerts)
+
+
 
 def checkValidOutput(args):
+    # args = ['query.js','tea_farmer',...]
+    args = [COMMAND] + [PATH_DIR+args[0]] + args[1:]
     out = None
     valid = False
     try:
@@ -46,7 +56,7 @@ def checkValidOutput(args):
 
 def getPending():
     global USERNAME
-    out,valid = checkValidOutput(['node','/home/dhruva/fabric-samples/fabchat/javascript/query.js',USERNAME,'0','pending'])
+    out,valid = checkValidOutput(['query.js',USERNAME,'0','pending'])
     if not valid:
         raise 'Invalid!'
     print('getPending ----------',out)
@@ -57,7 +67,7 @@ def getPending():
 
 def getHistory():
     global USERNAME
-    out,valid = checkValidOutput(['node','/home/dhruva/fabric-samples/fabchat/javascript/query.js',USERNAME,'0','txnHistory'])
+    out,valid = checkValidOutput(['query.js',USERNAME,'0','txnHistory'])
     if not valid:
         raise 'Invalid!'
 
@@ -67,7 +77,7 @@ def getHistory():
 
 def getStorage():
     global USERNAME
-    out,valid = checkValidOutput(['node','/home/dhruva/fabric-samples/fabchat/javascript/query.js',USERNAME,'0','storage'])
+    out,valid = checkValidOutput(['query.js',USERNAME,'0','storage'])
     if not valid:
         raise 'Invalid!'
 
@@ -82,16 +92,16 @@ def landing():
 @app.route('/home')
 def home():
     global USERNAME
-    global customer
+    global USER_TYPE
     global alerts
 
-    if customer:
+    if USER_TYPE == 'customer':
         return redirect(url_for('landing'))
 
     pend = []
     hist = []
     stor = {}
-    if not customer:
+    if USER_TYPE != 'customer':
         try:
             print('TRYING TO GET DATA')
             pend = getPending()
@@ -116,24 +126,26 @@ def home():
 @app.route('/login', methods=["POST","GET"])
 def login():
     global USERNAME
-    global customer
+    global USER_ID
+    global USER_TYPE
     global alerts
     if request.method == "GET":
         return render_template('login.html')
     else:
         out = None
+        uid = None
         print(request.form)
         usr = request.form['username']
         pwd = request.form['password']
         try:
-            out,valid = checkValidOutput(['node','/home/dhruva/fabric-samples/fabchat/javascript/query.js',usr,pwd,'login'])
+            out,valid = checkValidOutput(['query.js',usr,pwd,'login'])
             if not valid:
                 raise 'Invalid CLI output!'
             print('-----------')
             print(out)
             print('-----------')
             # print(out.split())
-            out = out[1]
+            out = out[1].strip()
 
         except:
             print('Invalid command / output !')
@@ -141,28 +153,33 @@ def login():
     
         print('output from login:',out)
 
-        if out is None or out != "\nPERMISSION GRANTED!\n":
+        if out is None or out == "\nPERMISSION DENIED!\n":
             alerts.append('Invalid username or password!')
             return render_template('login.html')
         else:
             USERNAME = usr
-            customer = False
+            out = json.loads(out)
+            print(out)
+            USER_ID = out['userID']
+            USER_TYPE = out['user_type']
+            print('USER ID:',USER_ID)
             return redirect(url_for('home'))
 
 
 @app.route('/logout')
 def logout():
     global USERNAME
-    global customer
+    global USER_TYPE
     USERNAME = 'customer'
-    customer = True
+    USER_ID = -1
+    USER_TYPE = 'customer'
     return redirect(url_for('login'))
 
 
 @app.route('/register', methods=["POST","GET"])
 def register():
     global USERNAME
-    global customer
+    global USER_TYPE
     global alerts
     if request.method == "GET":
         return render_template('register.html')
@@ -178,9 +195,9 @@ def register():
         args = []
 
         if(role=='farmer'):
-            args = ['node','/home/dhruva/fabric-samples/fabchat/javascript/registerUser.js',username,role,name,location,certificate, password]
+            args = ['registerUser.js',username,role,name,location,certificate, password]
         else:
-            args = ['node','/home/dhruva/fabric-samples/fabchat/javascript/registerUser.js',username,role,name,location,password]
+            args = ['registerUser.js',username,role,name,location,password]
 
         out, valid = checkValidOutput(args)
         if not valid:
@@ -193,7 +210,7 @@ def register():
 @app.route('/addtxn', methods=["POST","GET"])
 def addtxn():
     global USERNAME
-    global customer
+    global USER_TYPE
     global alerts
     username = USERNAME
     if request.method == "GET":
@@ -223,7 +240,7 @@ def addtxn():
                 return render_template('addtxn.html', alerts=['Something went wrong!'])
 
             print(rawName)
-            _,valid = checkValidOutput(['node','/home/dhruva/fabric-samples/fabchat/javascript/invoke.js','createRaw',str(username),rawName, rawQuant, rawUnit])
+            _,valid = checkValidOutput(['invoke.js','createRaw',str(username),rawName, rawQuant, rawUnit])
             if not valid:
                 alerts.append('An error occurred while creating transaction!')
                 return redirect(url_for('home'))
@@ -237,7 +254,7 @@ def addtxn():
             if int(purQuant) <= 0:
                 return render_template('addtxn.html', alerts=['Something went wrong!'])
 
-            _,valid = checkValidOutput(['node','/home/dhruva/fabric-samples/fabchat/javascript/invoke.js','createPurchase',str(username),buyerID, productID, purchaseID, purQuant])
+            _,valid = checkValidOutput(['invoke.js','createPurchase',str(username),buyerID, productID, purchaseID, purQuant])
             if not valid:
                 alerts.append('An error occurred while creating transaction!')
                 return redirect(url_for('home'))
@@ -255,7 +272,7 @@ def addtxn():
             quantity = data['production-quantity'][0]
             unit = data['production-unit'][0]
             
-            _,valid = checkValidOutput(['node','/home/dhruva/fabric-samples/fabchat/javascript/invoke.js','createProduction',str(username),productName,subproducts,quantity,unit])
+            _,valid = checkValidOutput(['invoke.js','createProduction',str(username),productName,subproducts,quantity,unit])
             if not valid:
                 alerts.append('An error occurred while creating transaction!')
                 return redirect(url_for('home'))
@@ -267,11 +284,11 @@ def addtxn():
 @app.route('/explore/<id>')
 def explore(id):
     global USERNAME
-    global customer
+    global USER_TYPE
     global alerts
     out = None
     try:
-        out,valid = checkValidOutput(['node','/home/dhruva/fabric-samples/fabchat/javascript/query.js',USERNAME,str(id),'history'])
+        out,valid = checkValidOutput(['query.js',USERNAME,str(id),'history'])
         if not valid:
             raise 'Invalid query!'
         out = json.loads(out[1])
@@ -291,10 +308,10 @@ def explore(id):
 @app.route('/user/<id>')
 def view_user(id):
     global USERNAME
-    global customer
+    global USER_TYPE
     out = None
     try:
-        out,valid = checkValidOutput(['node','/home/dhruva/fabric-samples/fabchat/javascript/query.js',USERNAME,str(id),'viewUser'])
+        out,valid = checkValidOutput(['query.js',USERNAME,str(id),'viewUser'])
         if not valid:
             raise 'Invalid query!'
         out = json.loads(out[1])        
@@ -314,7 +331,7 @@ def validate(id):
     global alerts
     try:
         out = subprocess.check_output([
-            'node','/home/dhruva/fabric-samples/fabchat/javascript/invoke.js','validatePurchase',USERNAME,str(id)
+            'invoke.js','validatePurchase',USERNAME,str(id)
             # 'echo','hi there'
         ])#.decode().split('OUTPUT:')[1]
         out = json.loads(out)
