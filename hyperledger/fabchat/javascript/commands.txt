@@ -1,0 +1,25 @@
+node enrollAdmin.js
+
+node registerUser.js customer customer
+
+node registerUser.js tea_farmer farmer "Mohan Prakash" Ooty A7481982 password
+node registerUser.js dairy_farmer farmer "Chirag Kariappa" Bangalore null password
+node registerUser.js tea_coffee_vendor vendor "Shakti Tea Vendors" BLR password 
+node registerUser.js tea_maker manufacturer "Hot & Fresh Milk Tea" BOM password
+
+node invoke.js createRaw tea_farmer "Tea Leaves" 10 Kg
+node invoke.js createRaw dairy_farmer "Cow's Milk" 5 L
+
+node invoke.js createPurchase tea_farmer 2 4 null 8 
+node invoke.js createPurchase dairy_farmer 2 5 null 4
+
+node invoke.js validatePurchase tea_coffee_vendor 6
+node invoke.js validatePurchase tea_coffee_vendor 7
+
+node invoke.js createPurchase tea_coffee_vendor 3 4 6 6
+node invoke.js createPurchase tea_coffee_vendor 3 5 7 4
+
+node invoke.js validatePurchase tea_maker 8
+node invoke.js validatePurchase tea_maker 9
+
+node invoke.js createProduction tea_maker "Tea" "4 8 5 5 9 3" 3 L
