@@ -30,19 +30,19 @@
 
                                         <div class='row'>
                                             <div class='input-field col s12'>
-                                                <input class='validate' type='text' name='raw_product' id='raw_product' />
+                                                <input required class='validate' type='text' name='raw_product' id='raw_product' />
                                                 <label for='raw_product'>Enter the product name</label>
                                             </div>
                                         </div>
                                         <div class='row'>
                                             <div class='input-field col s12'>
-                                                <input class='validate' type='number' name='raw_product_quantity' id='raw_product_quantity' />
+                                                <input required class='validate' type='number' name='raw_product_quantity' id='raw_product_quantity' />
                                                 <label for='raw_product_quantity'>Enter the quantity produced</label>
                                             </div>
                                         </div>
                                         <div class='row'>
                                             <div class='input-field col s12'>
-                                                <input class='validate' type='text' name='raw_product_unit' id='raw_product_unit' />
+                                                <input required class='validate' type='text' name='raw_product_unit' id='raw_product_unit' />
                                                 <label for='raw_product_unit'>Enter the unit (kg, L, etc)</label>
                                             </div>
                                         </div>
@@ -69,11 +69,12 @@
                     <div class="section"></div>
                     <main>
                         <center>
-                            <div class="container">
+                            <div class="row">
+                            <div class="col s6">
                                 <div class="z-depth-1  egg-white row"
                                     style="display: inline-block; padding: 10px 48px 0px 48px; border: 1px solid #EEE;">
 
-                                    <form class="col s12" name="purchase" action="/addtxn" method="post">
+                                    <form id="purchase-form" class="col s12" name="purchase" action="/addtxn" method="post">
                                         <div class='row'>
                                             <div class='col s12'>
                                             </div>
@@ -83,25 +84,25 @@
 
                                         <div class='row'>
                                             <div class='input-field col s12'>
-                                                <input class='validate' type='text' name='buyerID' id='buyerID' />
+                                                <input required class='validate' type='text' name='buyerID' id='buyerID' />
                                                 <label for='buyerID'>Enter the buyer ID</label>
                                             </div>
                                         </div>
-                                        <div class='row'>
+                                        <div class='row' style="display: none;">
                                             <div class='input-field col s12'>
-                                                <input class='validate' type='text' name='purchaseID' id='purchaseID' />
+                                                <input required class='validate' type='text' name='purchaseID' id='purchaseID' />
                                                 <label for='purchaseID'>Enter the purchase ID</label>
                                             </div>
                                         </div>
-                                        <div class='row'>
+                                        <div class='row' style="display: none;">
                                             <div class='input-field col s12'>
-                                                <input class='validate' type='text' name='productID' id='productID' />
+                                                <input required class='validate' type='text' name='productID' id='productID' />
                                                 <label for='productID'>Enter the product ID</label>
                                             </div>
                                         </div>
-                                        <div class='row'>
+                                        <div class='row' style="display: none;">
                                             <div class='input-field col s12'>
-                                                <input class='validate' type='number' name='purchase_quantity' id='purchase_quantity' />
+                                                <input required class='validate' type='number' name='purchase_quantity' id='purchase_quantity' />
                                                 <label for='purchase_quantity'>Enter quantity sold</label>
                                             </div>
                                         </div>
@@ -109,8 +110,8 @@
                                         
                                         <center>
                                             <div class='row'>
-                                                <button type='submit' name='btn_purchase'
-                                                    class='col s12 btn btn-large waves-effect grey darken-3'>Add
+                                                <button type='button' name='btn_purchase'
+                                                    class='col s12 btn btn-large waves-effect grey darken-3' onclick="getPurchaseProduct()">Add
                                                     Transaction</button>
                                             </div>
                                         </center>
@@ -119,12 +120,43 @@
                                 </div>
                                 
                             </div>
-                            <center>
+                            <div class="col s6">
+                                <ul class="">
+                                    <!-- <form> -->
+                                    {% for item in storage %}
+                                    <li>
+                                        
+                                        
+                                        <div class="egg-white row" style="padding:10px">
+                                            <div class="role col s2">
+                                                <label>
+                                                    <input name="purchase-form-product" class="purchase-form-product" id="purchase-{{item}}-radio" type="radio" onchange="document.getElementById('purchase-{{item}}-quantity-div').style.display = this.checked ? 'block' : 'none';"/>
+                                                    <span>Sell</span>
+                                                </label>
+                                            </div>
+                                            <div class="col s6">
+                                                ID: {{item}} | &nbsp;<b>{{storage[item].product_name}}</b> &nbsp;| {{storage[item].quantity|join(' ')}}
+                                            </div>
+                                            <div class="role col s4" id="purchase-{{item}}-quantity-div" style="display: none; margin-right: 0%;">
+                                                <label>
+                                                    <input id="purchase-{{item}}-quantity"  style="width:40%" name="role" type="number" min=0 />
+                                                    <span>{{storage[item].quantity[1]}}</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    {% endfor %}
+                                    <!-- </form> -->
+
+                                </ul>
+                            </div>
+                            </div>
+                            <!-- <center>
                                 <div class="row">
                                 {% for txn in txn_history %}
                                     {% if ((txn.type == 'raw' or txn.type == 'production') and storage[txn.txnID|string].quantity[0] > 0) %}
                                     <div class="col s3">
-                                        <div class="z-depth-5" style="color: #fffcf0; width: 95%; margin:2.5%;border: 10px solid; cursor:pointer; background-color: rgba(0, 77, 64, 0.4);" onclick="document.getElementById('productID').value = '{{txn.txnID|string}}';document.getElementById('purchaseID').value = 'null';">
+                                        <div class="z-depth-5 purchase-choose-card" onclick="populatePurchaseForm('{{txn.productID}}','null')">
                                             <b>{{txn.product_name}}</b><hr style="width: 90%;">
                                             Product ID: {{ txn.txnID }}<br>
                                             Storage: {{ storage[txn.txnID|string].quantity|join(' ') }}<br>
@@ -132,7 +164,7 @@
                                     </div>
                                     {% elif (txn.type == 'bought' and storage[txn.productID|string].quantity[0] > 0) %}
                                     <div class="col s3">
-                                        <div class="z-depth-5" style="color: #fffcf0; width: 95%; margin:2.5%; ;border: 1px solid; cursor:pointer;  background-color: rgba(0, 77, 64, 0.4);" onclick="document.getElementById('productID').value = '{{txn.productID}}';document.getElementById('purchaseID').value = '{{txn.txnID|string}}';">
+                                        <div class="z-depth-5 purchase-choose-card" onclick="populatePurchaseForm('{{txn.productID}}','{{txn.purchaseID|string}}')">
                                             <b>{{txn.product_name}}</b><hr style="width: 90%;">
                                             Product ID: {{ txn.productID }}<br>
                                             Seller: {{ txn.seller }}<br>
@@ -142,7 +174,7 @@
                                     {% endif %}
                                 {% endfor %}
                                 </div>
-                            </center>
+                            </center> -->
                     </center>
                 </span>
             </div>
@@ -154,11 +186,12 @@
                     <div class="section"></div>
                     <main>
                         <center>
-                            <div class="container">
-                                <div class="z-depth-1 grey lighten-4 row"
+                            <div class="row">
+                            <div class="col s6">
+                                <div class="z-depth-1 egg-white row"
                                     style="display: inline-block; padding: 32px 48px 0px 48px; border: 1px solid #EEE;">
 
-                                    <form class="col s12" name="product" action="/addtxn" method="post">
+                                    <form class="col s12" id="production-form" name="product" action="/addtxn" method="post">
                                         <div class='row'>
                                             <div class='col s12'>
                                             </div>
@@ -168,11 +201,34 @@
 
                                         <div class='row'>
                                             <div class='input-field col s12'>
-                                                <input class='validate' type='text' name='product_name' id='product_name' />
+                                                <input required class='validate' type='text' name='product_name' id='product_name' />
                                                 <label for='product_name'>Enter the product name</label>
                                             </div>
                                         </div>
+                                        <!-- <br> -->
+                                        <div class='row'>
+                                            <div class='input-field col s12' style="display: none;">
+                                                <input required class='validate' type='text' name='production-sub_products' id='production-sub_products-result' />
+                                                <label for='production-sub_products'>Sub products</label>
+                                            </div>
+                                        </div>
+                                        <div class='row'>
+                                            <div class='input-field col s12'>
+                                                <input required class='validate' type='number' name='production-quantity' id='production-quantity' />
+                                                <label for='production-quantity'>Enter the quantity produced</label>
+                                            </div>
+                                        </div>
+                                        <div class='row'>
+                                            <div class='input-field col s12'>
+                                                <input required class='validate' type='text' name='production-unit' id='production-unit' />
+                                                <label for='production-unit'>Enter the unit (kg, L, etc)</label>
+                                            </div>
+                                        </div>
+                                        <br />
+                                        
 
+                                        
+<!-- 
                                         <div id="dynamicCheck">
                                             <button type="button" class = "btn-flat waves-effect waves-dark-grey-darken-1" onclick="createNewElement()">
                                                 <i class = "material-icons left">add</i>Add Subproduct</button></td>
@@ -181,18 +237,52 @@
                                         <br />
                                         <br />
                                         <div id="subproducts"></div>
-                                        
+                                         -->
                                         <br />
                                         <center>
                                             <div class='row'>
-                                                <button type='submit' name='btn_product'
-                                                    class='col s12 btn btn-large waves-effect brown lighten-1'>Add
+                                                <button type='button' name='btn_product'
+                                                    class='col s12 btn btn-large waves-effect grey darken-3' onclick="getSubProducts()">Add
                                                     Transaction</button>
                                             </div>
                                         </center>
                                         <input type="hidden" id="formname" name="formname" value="production">
                                     </form>
+
+                                    
                                 </div>
+                            </div>
+
+                            <div class="col s6">
+                                <ul class="">
+                                    <!-- <form> -->
+                                    {% for item in storage %}
+                                    <li>
+                                        
+                                        
+                                        <div class="egg-white row" style="padding:10px">
+                                            <div class="role col s2">
+                                                <label>
+                                                    <input class="production-form-sub_product" id="sub_product-{{item}}-checkbox" type="checkbox" onchange="document.getElementById('sub_product-{{item}}-quantity-div').style.display = this.checked ? 'block' : 'none';"/>
+                                                    <span>Add</span>
+                                                </label>
+                                            </div>
+                                            <div class="col s6">
+                                                ID: {{item}} | &nbsp;<b>{{storage[item].product_name}}</b> &nbsp;| {{storage[item].quantity|join(' ')}}
+                                            </div>
+                                            <div class="role col s4" id="sub_product-{{item}}-quantity-div" style="display: none; margin-right: 0%;">
+                                                <label>
+                                                    <input id="sub_product-{{item}}-quantity"  style="width:40%" name="role" type="number" min=0 />
+                                                    <span>{{storage[item].quantity[1]}}</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    {% endfor %}
+                                    <!-- </form> -->
+
+                                </ul>
+                            </div>
                             </div>
                         </center>
                 </span>
@@ -206,7 +296,7 @@
             {% for hist in txn_history %}
                 {% if hist.type != 'sold' %}
                 <li class="collection-item row" style="background-color: rgba(0, 77, 64, 0.4);">
-                    <div class="col s6">
+                    <div class="col s7">
                         <p>
                             <b>Product Name: {{ hist.product_name }}</b><br>
                             
@@ -219,7 +309,12 @@
                             {% elif hist.type == 'production' %}
 
                                 Product ID: {{ hist.txnID }}<br>
-                                Sub-products: {{ hist.sub_products }}<br>
+                                <div class="col s5">Sub-products:</div>
+                                  <div class="col s7">
+                                    {% for subp in hist.sub_products %}
+                                      {{subp.product_name}} ({{subp.quantity}} {{subp.unit_type}})<br>
+                                    {% endfor %}
+                                  </div>
 
                             {% elif hist.type == 'raw' %}
 
@@ -229,7 +324,7 @@
                             <!-- {{ hist}} -->
                         </p>
                     </div>
-                    <div class="col s6" style="text-align: center;">
+                    <div class="col s5" style="text-align: center;">
                         <p><b>{{ hist.type.upper() }}</b></p>
 
                     </div>
@@ -243,6 +338,8 @@
 
 
 <script>
+    var txn_history = {{ txn_history|tojson }};
+    console.log('TXN History:',txn_history);
     function createNewElement() {
     // First create a DIV element.
 	var txtNewInputBox = document.createElement("div");
@@ -255,10 +352,82 @@
 	document.getElementById("subproducts").appendChild(txtNewInputBox);
 
 
-    function populatePurchaseForm(txn){
-        document.getElementById('productID').value = txn.productID
     }
-}
+
+    function populatePurchaseForm(prod,pur){
+        document.getElementById('productID').value = prod;
+        document.getElementById('purchaseID').value = pur;
+    }
+
+    let purchase_cards = document.getElementsByClassName('purchase-choose-card');
+
+    for(let card of purchase_cards){
+        card.addEventListener('mouseover',function(){card.style.backgroundColor = 'rgba(0, 77, 64, 0.9)'})
+        card.addEventListener('mouseout',function(){card.style.backgroundColor = 'rgba(0, 77, 64, 0.4)'})
+    }
+
+    function getSubProducts(){
+        let subps = document.getElementsByClassName('production-form-sub_product');
+        res = ''
+        for(let subp_inp of subps){
+            if (subp_inp.checked){
+                let item_id = subp_inp.id.split('-')[1];
+                let purID = null
+                for(let txn of txn_history){
+                    if(txn.type != 'bought') continue
+                    if(String(txn.productID) == String(item_id)) {
+                        purID = txn.purchaseID;
+                        break;
+                    }       
+                }
+                // if(purID == null) continue
+
+                let quant = document.getElementById('sub_product-'+item_id+'-quantity').value;
+                if(quant == ''){
+                    alert('Invalid quantity!')
+                    return;
+                }
+                res += String(item_id) + ' ' + String(purID) + ' ' + String(quant) + ' '
+            }
+        }
+        document.getElementById('production-sub_products-result').value = res
+        // alert(res)
+        document.getElementById('production-form').submit()
+    }
+
+
+    function getPurchaseProduct(){
+        let prods = document.getElementsByClassName('purchase-form-product');
+        let prodID = null
+        for(let prod of prods){
+            if(prod.checked){
+                prodID = prod.id.split('-')[1]
+            }
+        }
+        if(prodID == null){
+            alert('No product found!')
+            return;
+        }
+        let purID = null
+        for(let txn of txn_history){
+            if(txn.type == 'sold') continue
+            if(txn.productID != prodID) continue
+            if(txn.purchaseID) purID = txn.purchaseID;
+
+        }
+        let quant = document.getElementById('purchase-'+prodID+'-quantity').value;
+        if(quant == ''){
+            alert('Invalid quantity!')
+            return;
+        }
+        document.getElementById('productID').value = String(prodID);
+        document.getElementById('purchaseID').value = String(purID);
+        document.getElementById('purchase_quantity').value = String(quant);
+
+        document.getElementById('purchase-form').submit()
+        
+    }
+
 </script>
 
 {% endblock %}

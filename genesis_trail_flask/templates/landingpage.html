@@ -1,17 +1,15 @@
 {% extends 'template.html' %}
 {% block content %}
  <div id="overall">
-  <nav role="navigation" style="background-color: #fffcf0;">
+  <nav role="navigation" style="background-color: rgb(255,252,240);">
     <div class="nav-wrapper container">
-      <a id="logo-container" href="#" class="brand-logo"><img src="/static/logo.png" style="height: auto; width: auto; max-height: 250px; max-width: 500px;" alt="Unsplashed background img 1"></a>
-      <ul class="right hide-on-med-and-down">
-        <li><a href="#">Navbar Link</a></li>
-      </ul>
+      <a id="logo-container" href="#" class="brand-logo"><img src="/static/logo.png" style="height: auto; width: auto; max-height: 90px; max-width: 180px;" alt="Unsplashed background img 1"></a>
+      
 
       <ul id="nav-mobile" class="sidenav">
-        <li><a href="#">Navbar Link</a></li>
+        <li><a href="/">Navbar Link</a></li>
       </ul>
-      <a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+      <a href="/" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
     </div>
   </nav>
 
@@ -57,7 +55,8 @@
 
             <p class="light center grey-text darken-2">Genesis Trail allows customers to trace their final product and view organic certification.</p>
             <div class="row center">
-                <a href="/" id="download-button" class="btn-large waves-effect waves-light teal darken-4">Explore</a>
+                <input id="explore-input" type="text" style="width:30%;margin:2%" placeholder="Product ID">
+                <button onclick="alert(document.getElementById('explore-input').value);window.location.href = '/explore/'+document.getElementById('explore-input').value;" id="download-button" class="btn-large waves-effect waves-light teal darken-4">Explore</button>
             </div>
           </div>
         </div>

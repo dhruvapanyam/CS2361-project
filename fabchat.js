@@ -434,27 +434,52 @@ class FabChat extends Contract {
        
     }
 
-    async queryMaster(ctx, productID) {
+    async queryMaster(ctx, entryID) {
         console.info('============= START : queryProductByID ===========');
-        console.log(`querying productID: ${productID}`);
-        let temp_id = productID;
+        console.log(`querying entryID: ${entryID}`);
 
+        let productID;
 
-        let txn = await this.getState(ctx, productID);
+        let txn = await this.getState(ctx, entryID);
+
         let lifecycle = []
-        if (txn.type == 'purchase') {
 
-            return this.queryMaster(ctx, txn.productID)
-            // productID is actually txn.productID
-            // so, we find the linked list, and update it once expandProduct returns
-            let temp_txn = txn;
-            let cur = productID
-            while (cur != null){
-                lifecycle.push(cur)
-                cur = temp_txn.purchaseID;
-                temp_txn = await this.getState(ctx, cur);
+        if (txn.type == 'purchase') {
+            productID = txn.productID;
+
+            let cur = txn.purchaseID;
+            let u_entry = await this.getState(ctx, txn.metadata.buyer);
+
+            lifecycle.push({
+                name: u_entry.data.full_name,
+                userID: txn.metadata.buyer
+            })
+
+            let cur_pur = txn; // current purchase ID
+
+            while (cur != null) {
+                cur_pur = await this.getState(ctx, cur); // current purchase ID
+                u_entry = await this.getState(ctx, cur_pur.metadata.buyer);
+                lifecycle.push({
+                    name: u_entry.data.full_name,
+                    userID: cur_pur.metadata.seller
+                })
+                cur = cur_pur.purchaseID;
             }
-            // productID = txn.productID
+
+            u_entry = await this.getState(ctx, cur_pur.metadata.seller);
+            lifecycle.push({
+                name: u_entry.data.full_name,
+                userID: cur_pur.metadata.seller
+            })
+
+
+        }
+        else if (txn.type == 'user') {
+            throw 'Cannot expand a user!'
+        }
+        else {
+            productID = entryID;
         }
 
 
@@ -462,7 +487,7 @@ class FabChat extends Contract {
         await this.expandProduct(ctx,productID,null,null,dict)
 
         if (lifecycle.length) {
-            dict[temp_id].lifecycle = lifecycle
+            dict[productID].lifecycle = lifecycle
         }
         
         console.info('============= END : queryProductByID ===========');

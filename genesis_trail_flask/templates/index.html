@@ -19,7 +19,7 @@
     <div id="bg">
     <nav id="site-navbar" class="transparent z-depth-0" style="margin-bottom: 5%;">
         <div class="nav-wrapper" style="padding-left: 1%; background-color: rgba(255,252,240,0.6); color: #004d40;">
-          <a href="/" class="brand-logo"><img src="/static/logo.png" style="height: auto; width: auto; max-height: 250px; max-width: 500px;" alt="Unsplashed background img 1"></a></a>
+          <a href="/home" class="brand-logo"><img src="/static/logo.png" style="height: auto; width: auto; max-height: 90px; max-width: 180px;" alt="Unsplashed background img 1"></a></a>
           <ul class="right hide-on-med-and-down">
               
             <li><span>Explore: &nbsp;</span></li>
@@ -32,7 +32,7 @@
             {% else %}
                 <li><a class="teal-text text-darken-4" href="/logout"><span id="login-button-base">LOGOUT</span></a></li>
             {% endif %}
-            <li><span class="teal-text text-darken-4" id="username-span">{{ username }}</span></li>
+            <li><span class="teal-text text-darken-4" style="margin-right: 10px" id="username-span">{{ username }}</span></li>
           </ul>
         </div>
       </nav>
@@ -42,6 +42,18 @@
 
     {% endblock %}
     </div>
+    <a id="modal-trigger" style="display: none;" class="waves-effect waves-light btn modal-trigger" href="#modal1">Modal</a>
+
+  <!-- Modal Structure -->
+  <div id="modal1" class="modal">
+    <div class="modal-content">
+      <h4>Alerts</h4>
+      <p id="alerts-modal-content"></p>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
+    </div>
+  </div>
 </body>
 </html>
 
@@ -120,4 +132,39 @@ body {
     background-color: #fffcf0;
 }
 
+
+
+.purchase-choose-card {
+    color: #fffcf0; 
+    width: 95%; 
+    margin:2.5%; 
+    padding:10px;
+    border: 1px solid; 
+    cursor:pointer; 
+    background-color: rgba(0, 77, 64, 0.4);
+}
+
 </style>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    var elems = document.querySelectorAll('.modal');
+    var instances = M.Modal.init(elems, {});
+  });
+
+
+document.addEventListener('DOMContentLoaded',()=>{
+    let als = JSON.parse('{{alerts|tojson}}')
+    console.log(als)
+    if(als.length > 0) {
+        let alerts_modal = document.getElementById('alerts-modal-content')
+        alerts_modal.innerHTML = ''
+        for(let al of als){
+            alerts_modal.innerHTML += al + '<br>'
+        }
+        document.getElementById('modal-trigger').click()
+    }
+})
+
+</script>

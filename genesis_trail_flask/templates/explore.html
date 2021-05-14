@@ -3,7 +3,7 @@
 <div>
 <div id="product-history-container">
     <div class="center-line width-100">
-        <nav id="product-breadcrumbs" class="grey-text text-darken-4" style="background-color: #beb7a4">
+        <nav id="product-breadcrumbs" class="grey-text text-darken-4" style="background-color:#fffcf0">
             <!-- <a href="#!" class="breadcrumb">First</a>
             <a href="#!" class="breadcrumb">Second</a>
             <a href="#!" class="breadcrumb">Third</a> -->
@@ -11,7 +11,7 @@
     </div>
     <div id="product-name-container" class="center-line width-100">
         <label id="product-name" class="">
-            <div class="card" style="background-color: rgba(60,60,60,1);" >
+            <div class="card" style="background-color: rgba(70,70,70,0.7);">
                 <div class="card-content white-text">
                   <span id="current-product-name" class="card-title"></span>
                   <br>
@@ -36,8 +36,8 @@
                 
             </div>
         </div>
-        <div id="purchases-container" class="center-line" style="margin-left: 2%; width: 18%; background-color: rgba(62, 117, 143, 0.3);" >
-            <div id="lifecycle-container" class="center-line width-100">
+        <div id="purchases-container" class="center-line home-page-card" style="margin-left: 2%; width: 18%; color: #fffcf0" >
+            <div id="lifecycle-container" class="center-line width-90" style="margin-left: 5%;">
                 <h5>Lifecycle:</h5>
                 <ul id="lifecycle" class="collection">
                 </ul>
@@ -133,7 +133,7 @@
 
     function createSubProductCard(i,ind) {
         let dom = `<div class="col s12 m6 l3">
-                  <div class="card" style="background-color: #beb7a4" >
+                  <div class="card" style="background-color: #fffcf0" >
                     <div class="card-content" style="color:#222222">
                       <span class="card-title">`+dict[i].product_name+`</span><hr style="width:95%">`
                         + '<p>Quantity: '+dict[CUR_PRODUCT].sub_products[ind][2] + ' ' + dict[i].unit_type+'</p><br>'
@@ -142,8 +142,8 @@
                       + getCertificateSymbols(i) +
                     `</div>
                     <div class="card-action" style="margin-left: 5%;">
-                        <a href="#" onclick="index += 1; CUR_PRODUCT = `+i+`; createSubproducts()">EXPLORE</a>
-                        <a href="#">TXN</a>
+                        <hr style="width:95%">
+                        <a href="#" style="color:#444444" onmouseover="this.style.color='#666666'" onmouseout="this.style.color='#444444'" onclick="index += 1; CUR_PRODUCT = `+i+`; createSubproducts()">EXPLORE</a>
                     </div>
                   </div>
                 </div>`
@@ -174,11 +174,13 @@
         }
         if(subprods.length == 0){
             let cert = dict[CUR_PRODUCT].certification
-            if(cert==undefined) cert = 'None'
+            if(cert==undefined || cert == null) cert = 'None'
             subDOM.innerHTML = `
-            <div class="card " style="background-color: rgba(62, 117, 143, 0.3)">
-                <div class="card-content white-text">
+            <div class="card " style="background-color: #fffcf0; color:black">
+                <div class="card-content">
                   <span class="card-title">Farmer's Organic Certificate</span>
+                  <hr style="width:75%">
+                  <i class="material-icons">verified_user</i>
                   <br>
                   <div>
                     <span>Farmer Name: `+dict[CUR_PRODUCT].manufacturer.name+`</span><br>
@@ -187,7 +189,7 @@
                 </div>
                 </div>
                 <div class="card-action" >
-                  <span class="card-links"><a>VIEW TXN</a></span>
+                  <span class="card-links"><a style="color:#444444" onmouseover="this.style.color='#666666'" onmouseout="this.style.color='#444444'" >VIEW TXN</a></span>
                 </div>
               </div>
             `
@@ -200,7 +202,7 @@
         // document.getElementById('manufacturer-clip').innerHTML = 'Manufacturer: ' + dict[CUR_PRODUCT].metadata.manufacturer;
 
         curPathDOM.innerHTML = ''
-        // console.log(product_path)
+        // console.log(product_path)background-color: #beb7a4
         // console.log('starting:',CUR_PRODUCT)
         for(let i=0;i<product_path.length;i++){
             // if(i==index) curDOM.innerHTML += "<button class='waves-light btn-large' id='index_"+i+"' onclick='curDOMClick(this.id)'><b>" + dict[product_path[i]].product_name + "</b></button>"
@@ -213,7 +215,12 @@
         // life.reverse()
         lifeDOM.innerHTML = ''
         for(let l of life) {
-            lifeDOM.innerHTML += '<li class="collection-item" style="background-color: rgba(62, 117, 143, 0.6)">'+JSON.stringify(l)+'</li>'
+            lifeDOM.innerHTML += '<li class="collection-item" style="background-color: rgba(0, 77, 64, 0.7);">'
+                + `<p>
+                    <b>Seller</b>: `+l.name+`<br>
+                    <b>User ID</b>: `+l.userID+`
+                    </p>`
+                +'</li>'
         }
 
     }

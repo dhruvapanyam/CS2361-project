@@ -17,16 +17,16 @@
 
                             <li>
                               <div class="collapsible-header teal-text text-darken-4" style="background-color: #fffcf0;"><i class="material-icons">hourglass_empty</i>ID: {{txn.txnID}} | {{txn.product_name}} |&nbsp;<b>PURCHASE</b></div>
-                              <div class="collapsible-body">
+                              <div class="collapsible-body" onmouseover="this.style.backgroundColor = 'rgba(0,77,64,0.5)';" onmouseover="this.style.backgroundColor = 'rgba(0,77,64,0.2)';" style="cursor: pointer;;background-color: rgba(0,77,64,0.2);">
                                 <span>
                                   Seller: {{txn.seller_name}} (ID: {{txn.seller}})<br>
                                   Product ID: {{txn.productID}}<br>
                                   Purchase ID: {{txn.purchaseID}}<br>
                                   Quantity: {{txn.quantity}} {{txn.unit_type}}<br><br>
                                   <form action="/validate/{{txn.txnID}}" method="post">
-                                    <input type="submit" value="Validate">
+                                    <button class="btn waves-effect grey darken-2" type="submit">Validate</button>
                                   </form>
-                                    <a href="/explore/{{txn.productID}}">Explore Product</a>
+                                    <!-- <a href="/explore/{{txn.productID}}">Explore Product</a> -->
                                 </span>
                               </div>
                             </li>
@@ -50,7 +50,7 @@
                           {% for item in storage %}
 
                           <li>
-                            <div class="collapsible-header teal-text text-darken-4" style="background-color: #fffcf0;"><i class="material-icons">list_alt</i>ID: {{item}} | {{storage[item|string].product_name}} |&nbsp;<b>{{storage[item|string].quantity|join(' ')}}</b></div>
+                            <div class="collapsible-header teal-text text-darken-4" style="background-color: #fffcf0;"><i class="material-icons">list_alt</i>ID: {{item}} |&nbsp; <b>{{storage[item|string].product_name}}</b>&nbsp; |&nbsp;{{storage[item|string].quantity|join(' ')}}</div>
                             
                           </li>
                           {% endfor %}
@@ -76,9 +76,9 @@
                           {% if (txn.type != 'sold' or txn.validated) %}
                           <div class="collapsible-header teal-text text-darken-4" style="background-color: #fffcf0;"><i class="material-icons">check</i>ID: {{txn.txnID}} | {{txn.product_name}} |&nbsp; <b>{{txn.type.upper()}}</b></div>
                           {% else %}
-                          <div class="collapsible-header " style="background-color: rgba(100,100,100,0.5); color: #fffcf0;"><i class="material-icons">clear</i>ID: {{txn.txnID}} | {{txn.product_name}} |&nbsp; <b>{{txn.type.upper()}}</b></div>
+                          <div class="collapsible-header " style="background-color: rgba(100,100,100,0.5); color: #fffcf0;"><i class="material-icons">hourglass_empty</i>ID: {{txn.txnID}} | {{txn.product_name}} |&nbsp; <b>{{txn.type.upper()}}</b></div>
                           {% endif %}
-                          <div class="collapsible-body {{'teal darken-4' if (txn.type != 'sold' or txn.validated) else 'grey darken-3'}}">
+                          <div class="collapsible-body" onmouseover="this.style.backgroundColor = '{{'rgba(0,77,64,0.5)' if (txn.type != 'sold' or txn.validated) else 'rgba(30,30,30,1'}}'" onmouseout="this.style.backgroundColor = '{{'rgba(0,77,64,0.2)' if (txn.type != 'sold' or txn.validated) else 'rgba(30,30,30,0.8'}}'" style="cursor:pointer;background-color: {{'rgba(0,77,64,0.2)' if (txn.type != 'sold' or txn.validated) else 'rgba(30,30,30,0.8'}}" onclick="window.location.href = '/explore/'+{{txn.txnID}}">
                             <span>
                               {% if txn.type == 'raw' %}
                                 Product ID: {{txn.txnID}}<br>
@@ -99,7 +99,14 @@
                               {% else %}
                                 Product ID: {{txn.txnID}}<br>
                                 Quantity: {{txn.quantity}} {{txn.unit_type}}<br>
-                                Sub-products: {{txn.sub_products}}<br>
+                                <div class="row">
+                                  <div class="col s5">Sub-products:</div>
+                                  <div class="col s7">
+                                    {% for subp in txn.sub_products %}
+                                      {{subp.product_name}} ({{subp.quantity}} {{subp.unit_type}})<br>
+                                    {% endfor %}
+                                  </div>
+                                </div>
 
                               {% endif %}
                               
@@ -119,7 +126,7 @@
 
         <center>
           <div>
-            <button onclick="window.location.href = '/addtxn'" class="btn-large waves-effect grey darken-3 valign-wrapper z-depth-5" style="height:100px; width: 250px;color: #fffcf0;">Add Transaction</button>
+            <button onclick="window.location.href = '/addtxn'" class="btn-large waves-effect grey darken-3 valign-wrapper z-depth-5" style="color: #fffcf0;">Add Transaction</button>
           </div>
         </center>
     </div>

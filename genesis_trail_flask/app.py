@@ -7,20 +7,36 @@ app = Flask(__name__)
 
 USERNAME = 'customer'
 customer = True
+alerts = []
 
 @app.context_processor
 def inject_stage_and_region():
     global USERNAME
     global customer
-    return dict(username=USERNAME,customer=customer)
+    global alerts
+    # print('injecting!')
+    temp_alerts = [al for al in alerts]
+    alerts = []
+
+    return dict(username=USERNAME,customer=customer, alerts=temp_alerts)
 
 def checkValidOutput(args):
-    out = subprocess.check_output(args).decode()
-    out = out.split('GENESIS TRAIL OUTPUT:')
-    print('------------------------------------------------')
-    print('Valid?',len(out)>1)
-    print('------------------------------------------------')
-    return out, (len(out) > 1)
+    out = None
+    valid = False
+    try:
+        out = subprocess.check_output(args).decode()
+        out = out.split('GENESIS TRAIL OUTPUT:')
+        print('------------------------------------------------')
+        print('Valid?',len(out)>1)
+        print('------------------------------------------------')
+        print('Chaincode output:')
+        print(out)
+        print('------------------------------------------------')
+        valid = len(out) > 1
+    except:
+        valid = False
+    
+    return out, valid
 
 # def expectOutput(args, expected):
 #     out, valid = checkValidOutput(args)
@@ -59,11 +75,19 @@ def getStorage():
 
     return out
 
-
 @app.route('/')
+def landing():
+    return render_template('landingpage.html')
+
+@app.route('/home')
 def home():
     global USERNAME
     global customer
+    global alerts
+
+    if customer:
+        return redirect(url_for('landing'))
+
     pend = []
     hist = []
     stor = {}
@@ -83,6 +107,7 @@ def home():
             print('Storage:',stor)
         except:
             print('Invalid command / output !')
+            alerts.append('An error occurred while fetching your data!')
             
     return render_template('home.html', txn_pending=pend, txn_history=hist, storage=stor)
 
@@ -92,8 +117,9 @@ def home():
 def login():
     global USERNAME
     global customer
+    global alerts
     if request.method == "GET":
-        return render_template('login.html', alerts=[])
+        return render_template('login.html')
     else:
         out = None
         print(request.form)
@@ -111,11 +137,13 @@ def login():
 
         except:
             print('Invalid command / output !')
+            alerts.append('An error occurred while trying to login!')
     
         print('output from login:',out)
 
         if out is None or out != "\nPERMISSION GRANTED!\n":
-            return render_template('login.html', alerts=["Login failed!"])
+            alerts.append('Invalid username or password!')
+            return render_template('login.html')
         else:
             USERNAME = usr
             customer = False
@@ -128,13 +156,14 @@ def logout():
     global customer
     USERNAME = 'customer'
     customer = True
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 
 @app.route('/register', methods=["POST","GET"])
 def register():
     global USERNAME
     global customer
+    global alerts
     if request.method == "GET":
         return render_template('register.html')
     else:
@@ -155,7 +184,8 @@ def register():
 
         out, valid = checkValidOutput(args)
         if not valid:
-            return render_template('register.html', alerts=['Could not register!'])
+            alerts.append('Registration failed!')
+            return render_template('register.html')
 
         return redirect(url_for('login'))
 
@@ -164,6 +194,7 @@ def register():
 def addtxn():
     global USERNAME
     global customer
+    global alerts
     username = USERNAME
     if request.method == "GET":
         hist = []
@@ -172,12 +203,15 @@ def addtxn():
             hist = getHistory()
             stor = getStorage()
         except:
+            alerts.append('An error occurred while fetching your data!')
             return redirect(url_for('home'))
+
         return render_template('addtxn.html',txn_history=hist, storage=stor)
     else:
         data = request.form
         data = data.to_dict(flat=False)
         print('form output:', data)
+        # return
 
         choice = ''.join(data['formname'])
 
@@ -191,7 +225,9 @@ def addtxn():
             print(rawName)
             _,valid = checkValidOutput(['node','/home/dhruva/fabric-samples/fabchat/javascript/invoke.js','createRaw',str(username),rawName, rawQuant, rawUnit])
             if not valid:
-                return render_template('addtxn.html', alerts=['Something went wrong!'])
+                alerts.append('An error occurred while creating transaction!')
+                return redirect(url_for('home'))
+                
 
         elif(choice=='purchase'):
             buyerID = ''.join(data["buyerID"])
@@ -203,28 +239,26 @@ def addtxn():
 
             _,valid = checkValidOutput(['node','/home/dhruva/fabric-samples/fabchat/javascript/invoke.js','createPurchase',str(username),buyerID, productID, purchaseID, purQuant])
             if not valid:
-                return render_template('addtxn.html', alerts=['Something went wrong!'])
+                alerts.append('An error occurred while creating transaction!')
+                return redirect(url_for('home'))
+                
 
         elif(choice=='production'):
             productName = ''.join(data['product_name'])
-            productID = data['ProductID']
-            purchaseID = data['PurchaseID']
-            subproducts = []
-            s = ""
-            for i in range(len(productID)):
-                s = str(productID[i])
-                subproducts.append(s)
-                s = str(purchaseID[i])
-                subproducts.append(s)
-            
-            sub = (' ').join(subproducts)
-            print(sub)
-            # for ele in subproducts:
-            #     sub = sub + " " + '"' + ele + '"'
+            # productID = data['ProductID']
+            subproducts = data['production-sub_products'][0]
+            if len(subproducts) == 0:
+                return render_template('addtxn.html', alerts=['Invalid subproduct entry!'])
+            else:
+                subproducts = subproducts[:-1] # remove last space
 
-            _,valid = checkValidOutput(['node','/home/dhruva/fabric-samples/fabchat/javascript/invoke.js','createProduction',str(username),productName,sub])
+            quantity = data['production-quantity'][0]
+            unit = data['production-unit'][0]
+            
+            _,valid = checkValidOutput(['node','/home/dhruva/fabric-samples/fabchat/javascript/invoke.js','createProduction',str(username),productName,subproducts,quantity,unit])
             if not valid:
-                return render_template('addtxn.html', alerts=['Something went wrong!'])
+                alerts.append('An error occurred while creating transaction!')
+                return redirect(url_for('home'))
 
         # USERNAME = usr
         return redirect(url_for('home'))
@@ -234,6 +268,7 @@ def addtxn():
 def explore(id):
     global USERNAME
     global customer
+    global alerts
     out = None
     try:
         out,valid = checkValidOutput(['node','/home/dhruva/fabric-samples/fabchat/javascript/query.js',USERNAME,str(id),'history'])
@@ -242,10 +277,14 @@ def explore(id):
         out = json.loads(out[1])
 
     except:
+        alerts.append('An error occurred while trying to retrieve product data')
         return redirect(url_for('home'))
 
-    if id not in out:
+    if len([k for k in out]) == 0:
+        alerts.append('No history found for this ID!')
         return redirect(url_for('home'))
+
+    id = max([int(k) for k in out])
     return render_template('explore.html', data=out, id=id)
 
 
@@ -272,6 +311,7 @@ def validate(id):
     print("VALIDATE")
     out = None
     global USERNAME
+    global alerts
     try:
         out = subprocess.check_output([
             'node','/home/dhruva/fabric-samples/fabchat/javascript/invoke.js','validatePurchase',USERNAME,str(id)
@@ -281,6 +321,7 @@ def validate(id):
         
     except:
         # return redirect(url_for('home'))
+        alerts.append('Could not validate this transaction!')
         pass
 
     print(out)
