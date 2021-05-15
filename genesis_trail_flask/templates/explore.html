@@ -174,17 +174,18 @@
         }
         if(subprods.length == 0){
             let cert = dict[CUR_PRODUCT].certification
-            if(cert==undefined || cert == null) cert = 'None'
+            let symbol = 'verified_user'
+            if(cert==undefined || cert == null) {cert = 'None';symbol = 'cancel'}
             subDOM.innerHTML = `
             <div class="card " style="background-color: #fffcf0; color:black">
                 <div class="card-content">
                   <span class="card-title">Farmer's Organic Certificate</span>
                   <hr style="width:75%">
-                  <i class="material-icons">verified_user</i>
+                  <i class="material-icons">`+symbol+`</i>
                   <br>
                   <div>
                     <span>Farmer Name: `+dict[CUR_PRODUCT].manufacturer.name+`</span><br>
-                    <span>Accreditation Number: `+cert+`</span>
+                    <span>Accreditation Number: `+'<b>'+cert+'</b>'+`</span>
                     
                 </div>
                 </div>
@@ -218,7 +219,7 @@
             lifeDOM.innerHTML += '<li class="collection-item" style="background-color: rgba(0, 77, 64, 0.7);">'
                 + `<p>
                     <b>Seller</b>: `+l.name+`<br>
-                    <b>User ID</b>: `+l.userID+`
+                    <b>Location</b>: `+l.location+`
                     </p>`
                 +'</li>'
         }

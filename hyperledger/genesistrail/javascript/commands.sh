@@ -1,3 +1,5 @@
+#!/bin/sh
+
 node enrollAdmin.js
 
 node registerUser.js customer customer

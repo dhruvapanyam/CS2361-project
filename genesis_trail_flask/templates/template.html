@@ -35,6 +35,9 @@
 <script>
 
 document.addEventListener('DOMContentLoaded',()=>{
+    var elems = document.querySelectorAll('.modal');
+    var instances = M.Modal.init(elems, {});
+
     let als = JSON.parse('{{alerts|tojson}}')
     console.log(als)
     if(als.length > 0) {

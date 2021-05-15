@@ -294,7 +294,7 @@ def explore(id):
         out = json.loads(out[1])
 
     except:
-        alerts.append('An error occurred while trying to retrieve product data')
+        alerts.append('Could not find any data for ID: '+str(id))
         return redirect(url_for('home'))
 
     if len([k for k in out]) == 0:
@@ -330,11 +330,9 @@ def validate(id):
     global USERNAME
     global alerts
     try:
-        out = subprocess.check_output([
-            'invoke.js','validatePurchase',USERNAME,str(id)
-            # 'echo','hi there'
-        ])#.decode().split('OUTPUT:')[1]
-        out = json.loads(out)
+        _,valid = checkValidOutput(['invoke.js','validatePurchase',USERNAME,id])
+        if not valid:
+            raise 'error validating'
         
     except:
         # return redirect(url_for('home'))

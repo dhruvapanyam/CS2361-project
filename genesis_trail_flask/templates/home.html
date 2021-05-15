@@ -1,6 +1,6 @@
 {% extends 'index.html' %}
 {% block content %}
-<div class="width-80" style="margin-left: 10%;">
+<div class="width-90" style="margin-left: 5%;">
     <div class="row">
         
         <div class="col s12">
@@ -81,27 +81,28 @@
                           <div class="collapsible-body" onmouseover="this.style.backgroundColor = '{{'rgba(0,77,64,0.5)' if (txn.type != 'sold' or txn.validated) else 'rgba(30,30,30,1'}}'" onmouseout="this.style.backgroundColor = '{{'rgba(0,77,64,0.2)' if (txn.type != 'sold' or txn.validated) else 'rgba(30,30,30,0.8'}}'" style="cursor:pointer;background-color: {{'rgba(0,77,64,0.2)' if (txn.type != 'sold' or txn.validated) else 'rgba(30,30,30,0.8'}}" onclick="window.location.href = '/explore/'+{{txn.txnID}}">
                             <span>
                               {% if txn.type == 'raw' %}
-                                Product ID: {{txn.txnID}}<br>
-                                Quantity: {{txn.quantity}} {{txn.unit_type}}<br>
+                                <b>Product ID</b>: {{txn.txnID}}<br>
+                                <b>Quantity</b>: {{txn.quantity}} {{txn.unit_type}}<br>
                               
                               {% elif txn.type == 'sold' or txn.type == 'bought' %}
-                                Purchase ID: {{txn.txnID}}<br>
-                                Product ID: {{txn.productID}}<br>
+                              <b>Purchase ID</b></b>: {{txn.txnID}}<br>
+                                <b>Product ID</b>: {{txn.productID}}<br>
+                                  <b>Quantity</b>: {{txn.quantity}} {{txn.unit_type}}<br>
                                 {% if txn.type == 'sold' %}
-                                  Buyer: {{txn.buyer_name}} (ID:{{txn.buyer}})<br>
+                                <b>Buyer</b>: {{txn.buyer_name}} (ID:{{txn.buyer}})<br>
                                 {% else %}
-                                  Seller: {{txn.seller_name}} (ID:{{txn.seller}})<br>
+                                <b>Seller</b>: {{txn.seller_name}} (ID:{{txn.seller}})<br>
                                 {% endif %}
                                 {% if (txn.type != 'sold' or txn.validated) == false %}
                                 <b>*UNVALIDATED*</b>
                               {% endif %}
 
                               {% else %}
-                                Product ID: {{txn.txnID}}<br>
-                                Quantity: {{txn.quantity}} {{txn.unit_type}}<br>
+                                <b>Product ID</b>: {{txn.txnID}}<br>
+                                <b>Quantity</b>: {{txn.quantity}} {{txn.unit_type}}<br>
                                 <div class="row">
-                                  <div class="col s5">Sub-products:</div>
-                                  <div class="col s7">
+                                  <div class="col s4"><b>Sub-products</b>:</div>
+                                  <div class="col s8">
                                     {% for subp in txn.sub_products %}
                                       {{subp.product_name}} ({{subp.quantity}} {{subp.unit_type}})<br>
                                     {% endfor %}

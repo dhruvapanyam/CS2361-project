@@ -405,6 +405,7 @@ class GenesisTrail extends Contract {
 
             let life = [{
                 name: manuf.data.full_name,
+                location: manuf.data.location,
                 userID: manufID
             }]
             console.log('LIFE',life)
@@ -417,6 +418,7 @@ class GenesisTrail extends Contract {
                 let u = await this.getState(ctx,purchase.metadata.seller)
                 life.push({
                     name: u.data.full_name,
+                    location: u.data.location,
                     userID: purchase.metadata.seller
                 })
                 cur = purchase.purchaseID
@@ -452,6 +454,7 @@ class GenesisTrail extends Contract {
 
             lifecycle.push({
                 name: u_entry.data.full_name,
+                location: u_entry.data.location,
                 userID: txn.metadata.buyer
             })
 
@@ -462,6 +465,7 @@ class GenesisTrail extends Contract {
                 u_entry = await this.getState(ctx, cur_pur.metadata.buyer);
                 lifecycle.push({
                     name: u_entry.data.full_name,
+                    location: u_entry.data.location,
                     userID: cur_pur.metadata.seller
                 })
                 cur = cur_pur.purchaseID;
@@ -470,6 +474,7 @@ class GenesisTrail extends Contract {
             u_entry = await this.getState(ctx, cur_pur.metadata.seller);
             lifecycle.push({
                 name: u_entry.data.full_name,
+                location: u_entry.data.location,
                 userID: cur_pur.metadata.seller
             })
 
